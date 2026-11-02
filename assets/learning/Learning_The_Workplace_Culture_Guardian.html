@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>The Workplace Culture Guardian — Interactive POSH Onboarding & LMS Module</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      overflow-x: hidden;
+    }
+    .zone-transition {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    @keyframes pulse-subtle {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+    .badge-glow {
+      animation: pulse-subtle 2.5s infinite ease-in-out;
+    }
+    @media print {
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+
+  <!-- TOP NAVIGATION BAR (Mobile + Desktop) -->
+  <header class="sticky top-0 z-30 bg-slate-900 text-white shadow-md border-b border-slate-800 no-print">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2">
+      <!-- Left: Brand & Mobile Drawer Button -->
+      <div class="flex items-center gap-2.5 min-w-0">
+        <button id="mobileMenuBtn" type="button" class="lg:hidden p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 focus:outline-none" aria-label="Toggle Menu">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-sm shrink-0">
+          <svg class="w-5 h-5 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <div class="truncate">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-sm sm:text-base tracking-tight truncate">Culture Guardian</span>
+            <span class="hidden sm:inline-block text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">POSH Act 2013</span>
+          </div>
+          <p class="text-[11px] text-slate-400 truncate hidden sm:block">Interactive Self-Learning &amp; Onboarding Journey</p>
+        </div>
+      </div>
+
+      <!-- Center/Right: Gamification Telemetry & LMS Controls -->
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        <!-- Culture Score Pill -->
+        <div class="flex items-center gap-1.5 bg-slate-800/90 border border-slate-700 px-2.5 sm:px-3.5 py-1.5 rounded-full">
+          <svg class="w-4 h-4 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+          <span class="text-xs font-medium text-slate-300 hidden md:inline">Culture Score:</span>
+          <span id="headerScoreDisplay" class="text-xs sm:text-sm font-extrabold text-amber-400">0</span>
+          <span class="text-[11px] text-slate-400">/ 1000</span>
+        </div>
+
+        <!-- Badges Count Pill -->
+        <button id="openBadgesBtn" type="button" class="flex items-center gap-1.5 bg-slate-800/90 hover:bg-slate-700 border border-slate-700 px-2.5 sm:px-3 py-1.5 rounded-full transition" title="View Unlocked Badges">
+          <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+          </svg>
+          <span id="headerBadgeCount" class="text-xs sm:text-sm font-bold text-emerald-400">0/5</span>
+          <span class="text-xs text-slate-300 hidden sm:inline">Badges</span>
+        </button>
+
+        <!-- SCORM / LMS Ready Inspector Button -->
+        <button id="openLmsPanelBtn" type="button" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-2.5 sm:px-3.5 py-1.5 rounded-lg shadow-sm transition">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <span class="hidden sm:inline">LMS / SCORM</span>
+          <span class="sm:hidden">LMS</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Thin Global Progress Bar -->
+    <div class="w-full bg-slate-800 h-1.5">
+      <div id="globalProgressBar" class="bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-500 h-1.5 transition-all duration-500" style="width: 0%"></div>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE CONTAINER -->
+  <div class="flex-1 max-w-7xl w-full mx-auto flex relative">
+
+    <!-- MOBILE SIDEBAR BACKDROP -->
+    <div id="mobileBackdrop" class="fixed inset-0 bg-slate-900/60 z-40 hidden lg:hidden backdrop-blur-xs"></div>
+
+    <!-- LEFT NAVIGATION SIDEBAR (Quest Map & Modules) -->
+    <aside id="sidebarNav" class="fixed lg:static inset-y-0 left-0 z-50 w-72 sm:w-80 bg-white border-r border-slate-200 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out shrink-0 no-print">
+      <!-- Sidebar Header (Mobile Close) -->
+      <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+        <div>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Onboarding Quest Map</h2>
+          <p class="text-sm font-semibold text-slate-800 mt-0.5" id="sidebarLearnerName">Guardian Recruit</p>
+        </div>
+        <button id="closeMobileMenuBtn" type="button" class="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Navigation List -->
+      <nav id="questNavList" class="flex-1 overflow-y-auto p-3 space-y-1.5 custom-scrollbar">
+        <!-- Rendered dynamically by JS -->
+      </nav>
+
+      <!-- Sidebar Footer: Quick Reference & Reset -->
+      <div class="p-3.5 border-t border-slate-200 bg-slate-50 space-y-2">
+        <div class="flex items-center justify-between text-xs text-slate-600">
+          <span>Mastery Target: <strong>800 pts</strong></span>
+          <span id="sidebarCompletionPct" class="font-bold text-indigo-600">0% Complete</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button id="navTimelineBtn" type="button" class="px-2.5 py-2 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition flex items-center justify-center gap-1.5 shadow-2xs">
+            <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            IC Timelines
+          </button>
+          <button id="navAdditionsBtn" type="button" class="px-2.5 py-2 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition flex items-center justify-center gap-1.5 shadow-2xs">
+            <svg class="w-3.5 h-3.5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            L&amp;D Additions
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT STAGE -->
+    <main class="flex-1 min-w-0 pb-24 lg:pb-12 px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6">
+      <div id="mainStageContainer" class="max-w-4xl mx-auto">
+        <!-- Dynamically populated view -->
+      </div>
+    </main>
+  </div>
+
+  <!-- MOBILE STICKY BOTTOM BAR -->
+  <div class="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200 px-3 py-2 flex items-center justify-between gap-2 shadow-lg no-print">
+    <button id="mobilePrevBtn" type="button" class="px-3 py-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-40 flex items-center gap-1">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Prev
+    </button>
+    <button id="mobileMapQuickBtn" type="button" class="flex-1 py-2 px-3 rounded-lg bg-slate-100 text-slate-800 text-xs font-bold truncate text-center">
+      Zone Map
+    </button>
+    <button id="mobileNextBtn" type="button" class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-500 disabled:opacity-40 flex items-center gap-1">
+      Next
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+
+  <!-- MODAL 1: LMS / SCORM TELEMETRY & ADAPTER DRAWER -->
+  <div id="lmsModal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs hidden items-center justify-center p-3 sm:p-6 no-print">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <h3 class="font-bold text-sm sm:text-base">LMS &amp; SCORM 1.2 / 2004 Ready Architecture</h3>
+        </div>
+        <button id="closeLmsModalBtn" type="button" class="p-1 rounded-lg text-slate-400 hover:text-white">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="p-5 overflow-y-auto space-y-4 text-xs sm:text-sm custom-scrollbar">
+        <div class="p-3.5 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-950">
+          <p class="font-semibold">Built-in SCORM Bridge (`window.LMSAdapter`)</p>
+          <p class="mt-1 text-xs text-indigo-800 leading-relaxed">
+            This HTML module uses a decoupled state adapter. When launched inside an LMS (Moodle, SuccessFactors, Cornerstone, Docebo, Workday), it automatically searches for <code class="bg-white px-1 py-0.5 rounded border">window.API</code> (SCORM 1.2) or <code class="bg-white px-1 py-0.5 rounded border">window.API_1484_11</code> (SCORM 2004). When run standalone on mobile or laptop, it persists cleanly to local storage.
+          </p>
+        </div>
+
+        <!-- Instructor / L&D Reviewer Controls -->
+        <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-amber-800">L&amp;D / Instructional Designer Mode</span>
+            <p class="text-xs text-amber-900 mt-0.5">Unlock all zones &amp; simulate 1,000 points to preview the completion certificate immediately.</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button id="simulateCompleteBtn" type="button" class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition shadow-2xs">
+              Simulate 100% Pass
+            </button>
+            <button id="resetProgressBtn" type="button" class="px-3 py-1.5 rounded-lg bg-white border border-rose-300 text-rose-700 hover:bg-rose-50 text-xs font-semibold transition">
+              Reset Course
+            </button>
+          </div>
+        </div>
+
+        <!-- Live SCORM Data Model Dump -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="font-bold text-xs uppercase tracking-wider text-slate-500">Live SCORM CMI Data Model Payload</span>
+            <span id="scormConnectionBadge" class="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium">Mode: Standalone LocalStorage</span>
+          </div>
+          <pre id="scormPayloadPre" class="bg-slate-950 text-emerald-400 p-3.5 rounded-xl font-mono text-xs overflow-x-auto leading-relaxed"></pre>
+        </div>
+
+        <!-- Export Manifest / State -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200">
+          <button id="downloadManifestBtn" type="button" class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Download SCORM imsmanifest.xml
+          </button>
+          <button id="copyJsonStateBtn" type="button" class="px-3.5 py-2 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition">
+            Copy Learner Telemetry JSON
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: BADGE CABINET MODAL -->
+  <div id="badgesModal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs hidden items-center justify-center p-3 sm:p-6 no-print">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="font-bold text-base text-slate-900">Guardian Badge Cabinet</h3>
+          <p class="text-xs text-slate-500">Complete all Knowledge Checks in a zone to unlock its badge</p>
+        </div>
+        <button id="closeBadgesModalBtn" type="button" class="p-1 rounded-lg text-slate-400 hover:text-slate-700">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div id="badgesModalGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 my-4 max-h-[65vh] overflow-y-auto pr-1">
+        <!-- Populated by JS -->
+      </div>
+      <div class="text-right">
+        <button id="closeBadgesModalFooterBtn" type="button" class="px-4 py-2 rounded-lg bg-slate-900 text-white text-xs font-semibold">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastContainer" class="fixed bottom-16 lg:bottom-6 right-4 z-50 flex flex-col gap-2 pointer-events-none no-print"></div>
+
+  <script>
+    /*************************************************************************
+     * 1. COURSE CURRICULUM & LEGAL CASE DATA (INDIAN POSH ACT, 2013)
+     *************************************************************************/
+    const COURSE_ZONES = [
+      {
+        id: 'zone-1',
+        number: 1,
+        title: 'Foundations of Respect',
+        subtitle: 'Statutory Definitions, Intent vs. Impact & Physical Boundaries',
+        badgeName: 'Boundary Sentinel',
+        badgeIcon: '🛡️',
+        badgeColor: 'from-blue-500 to-indigo-600',
+        sectionRef: 'Sections 2(a) & 2(n) — POSH Act, 2013',
+        missionBrief: 'Your first mission as an aspiring Culture Guardian is to master the legal definition of sexual harassment under Indian law, internalize why "benign intent" offers zero legal defense, and distinguish healthy workplace rapport from boundary violations.',
+        concepts: [
+          {
+            title: 'Who is Protected? — The "Aggrieved Woman" (Section 2(a))',
+            body: 'The POSH Act protects every woman of any age, whether employed or not, who alleges to have been subjected to any act of sexual harassment at the workplace. This covers permanent staff, probationers, contractual workers, consultants, interns, apprentices, daily-wage staff, and even external clients, vendors, or job applicants visiting the premises.'
+          },
+          {
+            title: 'What Constitutes Sexual Harassment? (Section 2(n))',
+            body: 'Any UNWELCOME act or behavior (whether directly or by implication), namely: (1) Physical contact and advances; (2) A demand or request for sexual favors; (3) Making sexually colored remarks; (4) Showing pornography; or (5) Any other unwelcome physical, verbal, or non-verbal conduct of a sexual nature.'
+          },
+          {
+            title: 'The Golden Legal Axiom: Intent vs. Impact',
+            body: 'Under Indian jurisprudence (originating from Vishaka v. State of Rajasthan, 1997), the perpetrator\'s subjective intent is legally irrelevant. Saying "I only meant it as a friendly compliment" or "It was harmless office banter" is not a defense. The inquiry evaluates solely how the behavior impacted the recipient.'
+          }
+        ],
+        comparisonTable: [
+          { aspect: 'Compliments & Attire', safe: '"Your client presentation today was very sharp and well-structured."', violation: '"That outfit really hugs your figure; you look breathtaking today."' },
+          { aspect: 'Physical Boundaries', safe: 'A brief professional handshake or verbal greeting.', violation: 'Lingering shoulder rubs, touching hair, hugging without consent, or cornering someone\'s desk.' },
+          { aspect: 'Workplace Humor', safe: 'Lighthearted jokes about project sprints or coffee habits.', violation: 'Double-entendre jokes, explicit memes, or remarks about someone\'s romantic life.' }
+        ],
+        caseLaw: {
+          type: 'SUPREME COURT LANDMARK PRECEDENT',
+          citation: 'Apparel Export Promotion Council v. A.K. Chopra (1999) 1 SCC 759',
+          court: 'Supreme Court of India',
+          verdictTag: 'Dismissal of Senior Executive Upheld',
+          facts: 'A senior officer repeatedly pressured a female subordinate and attempted to sit too close and molest her in an elevator and hotel room during work. He argued that because he never succeeded in making actual physical contact, his behavior could not be termed sexual harassment.',
+          holding: 'The Supreme Court decisively rejected this argument, holding that physical contact is NOT a mandatory prerequisite for sexual harassment. Any unwelcome sexual advance, gesture, or verbal/non-verbal overture that offends feminine dignity violates Article 21 of the Constitution.',
+          url: 'https://indiankanoon.org/doc/1829914/'
+        },
+        questions: [
+          {
+            id: 'q1_1',
+            scenario: 'Every morning during the daily engineering stand-up, Tarun remarks on Deepa\'s appearance: "Deepa, your smile lights up the whole floor. You should wear bright sarees more often, they flatter your figure." Deepa feels uncomfortable, looks down, and asks to move to the Jira tickets. Tarun considers himself an encouraging, friendly colleague.',
+            question: 'How does the POSH Act evaluate Tarun\'s conduct?',
+            options: [
+              { id: 'a', text: 'It is harmless positive feedback that builds team morale.' },
+              { id: 'b', text: 'It does not qualify as harassment because Tarun never touched Deepa or asked her out.' },
+              { id: 'c', text: 'It constitutes unwelcome verbal conduct of a sexually colored nature under Section 2(n); Tarun\'s friendly intent provides no legal shield.' },
+              { id: 'd', text: 'It only becomes sexual harassment if Deepa sends a formal written warning to Tarun first.' }
+            ],
+            correctId: 'c',
+            rationale: 'Correct! Under Section 2(n), persistent unsolicited remarks on physical appearance that are unwelcome to the recipient constitute verbal sexual harassment. Polite evasion or nervous silence is a common reaction to workplace dynamics, not consent.'
+          },
+          {
+            id: 'q1_2',
+            scenario: 'A third-party vendor\'s female account manager visits your Mumbai office for a quarterly review. While waiting in the conference room, an employee makes sexually suggestive remarks to her. She wishes to file a POSH complaint with your company\'s Internal Committee (IC).',
+            question: 'Does your company\'s Internal Committee have jurisdiction to accept her complaint?',
+            options: [
+              { id: 'a', text: 'No, because she is not on the company payroll.' },
+              { id: 'b', text: 'Yes, Section 2(a) explicitly protects any woman visiting a workplace, whether employed by the organization or not.' },
+              { id: 'c', text: 'No, she can only file a police FIR.' },
+              { id: 'd', text: 'Only if her vendor contract contains a specific POSH arbitration clause.' }
+            ],
+            correctId: 'b',
+            rationale: 'Correct! Section 2(a) defines an "aggrieved woman" broadly to include any woman of any age, whether employed or not, who experiences sexual harassment at a workplace.'
+          }
+        ]
+      },
+      {
+        id: 'zone-2',
+        number: 2,
+        title: 'The Extended Workplace',
+        subtitle: 'Hybrid Work, Virtual Channels, Travel & Offsite Boundaries',
+        badgeName: 'Digital Discernment',
+        badgeIcon: '🌐',
+        badgeColor: 'from-teal-500 to-emerald-600',
+        sectionRef: 'Section 2(o) — Extended Workplace Doctrine',
+        missionBrief: 'Work is no longer confined to a physical cubicle. Your second mission is to navigate the "Extended Workplace Doctrine" across Slack, Microsoft Teams, WhatsApp groups, business travel hotels, and after-hours corporate retreats.',
+        concepts: [
+          {
+            title: 'The Extended Workplace Doctrine (Section 2(o))',
+            body: 'Under Section 2(o), the "workplace" includes any place visited by the employee arising out of or during the course of employment—including client sites, conferences, company-arranged transport, hotel stays during business travel, and offsites.'
+          },
+          {
+            title: 'The Digital & Remote Workplace',
+            body: 'Indian High Courts hold that virtual interactions—Zoom/Teams video calls, Slack DMs, work emails, and WhatsApp chats between colleagues—are direct extensions of the workplace. Harassment occurring from home over digital platforms carries the exact same penalties as in-office misconduct.'
+          },
+          {
+            title: 'Digital Microaggressions & After-Hours Etiquette',
+            body: 'Sending late-night personal messages, demanding colleagues turn on cameras in private bedrooms, commenting on loungewear during remote calls, or using suggestive emojis (😉, 🔥, 😘, ❤️) in work chats breaches professional boundaries.'
+          }
+        ],
+        comparisonTable: [
+          { aspect: 'Video Call Decorum', safe: 'Using neutral/blurred backgrounds and keeping attire professional.', violation: 'Asking a colleague to pan their webcam around their bedroom or commenting on their home clothes.' },
+          { aspect: 'Messaging & Emojis', safe: 'Using 👍, 👏, or ✅ in project channels during work hours.', violation: 'Sending 😘, 🔥, ❤️ or pet names ("babe", "dear", "sweetie") in private DMs.' },
+          { aspect: 'Corporate Offsites', safe: 'Socializing in common dining areas with respect for colleagues\' personal space.', violation: 'Texting a junior colleague at midnight to come to a private hotel room for drinks.' }
+        ],
+        caseLaw: {
+          type: 'HIGH COURT DOCTRINAL PRECEDENT',
+          citation: 'Saurabh Kumar Mallick v. Comptroller & Auditor General of India (2008)',
+          court: 'Delhi High Court',
+          verdictTag: 'Extended Workplace Upheld',
+          facts: 'A senior officer allegedly harassed a woman officer at an official mess/residence complex outside office hours and contended that the location was not a "workplace" so the committee lacked jurisdiction.',
+          holding: 'The Delhi High Court rejected a narrow literal interpretation of "workplace," ruling that any extension of the work environment where employees interact due to their employment nexus falls under sexual harassment jurisdiction.',
+          url: 'https://indiankanoon.org/doc/1245655/'
+        },
+        questions: [
+          {
+            id: 'q2_1',
+            scenario: 'During an annual company offsite in Goa, official dinner concludes at 10:30 PM. At 11:45 PM, Amit (Associate Director) sends a private WhatsApp message to Tanya (Junior Analyst): "Hey Tanya, you looked stunning tonight. Downstairs is boring—come up to my room for a private drink. What happens at the offsite stays at the offsite 😉🥂."',
+            question: 'Which statement accurately reflects the legal status of Amit\'s message?',
+            options: [
+              { id: 'a', text: 'The IC has no jurisdiction because it happened at 11:45 PM after official work hours.' },
+              { id: 'b', text: 'The IC has full jurisdiction because corporate offsites, hotel accommodations, and related messages fall under the Extended Workplace Doctrine.' },
+              { id: 'c', text: 'It is not actionable because it was sent from Amit\'s personal phone on WhatsApp.' },
+              { id: 'd', text: 'It is excused as harmless banter because of the wink emoji.' }
+            ],
+            correctId: 'b',
+            rationale: 'Correct! Section 2(o) covers any place visited by an employee arising out of or during the course of employment, including hotel stays and offsites. Private WhatsApp messages between colleagues at an offsite are squarely within IC jurisdiction.'
+          },
+          {
+            id: 'q2_2',
+            scenario: 'During a remote 1-on-1 Microsoft Teams call, a manager notices his direct report is working from home and says: "You look much more attractive without your formal office glasses. Why don\'t we do our Friday catch-ups on FaceTime late evening over wine?"',
+            question: 'How should this virtual interaction be classified?',
+            options: [
+              { id: 'a', text: 'Normal remote team bonding.' },
+              { id: 'b', text: 'Unwelcome sexually colored verbal conduct and boundary violation in the virtual extended workplace.' },
+              { id: 'c', text: 'Outside POSH scope because both employees were inside their own homes.' },
+              { id: 'd', text: 'Acceptable as long as the manager doesn\'t record the call.' }
+            ],
+            correctId: 'b',
+            rationale: 'Correct! Virtual platforms used for work are legally part of the workplace. Unsolicited personal remarks on attractiveness and invitations for late-evening private drinks over video violate POSH standards.'
+          }
+        ]
+      },
+      {
+        id: 'zone-3',
+        number: 3,
+        title: 'The Gray-Zone Matrix',
+        subtitle: 'Quid Pro Quo vs. Hostile Work Environment & Retaliation',
+        badgeName: 'Equity Arbiter',
+        badgeIcon: '⚖️',
+        badgeColor: 'from-amber-500 to-orange-600',
+        sectionRef: 'Section 3(2) — Circumstances of Harassment',
+        missionBrief: 'Workplace harassment is rarely overt; it often operates through subtle power levers, implied career promises, or retaliatory exclusion. Your third mission is to decode Quid Pro Quo and Hostile Work Environment patterns under Section 3(2).',
+        concepts: [
+          {
+            title: 'Quid Pro Quo ("This for That") — Section 3(2)(i)–(iii)',
+            body: 'Occurs when a person in authority links employment outcomes to sexual or personal compliance. It includes implied or explicit promises of preferential treatment (promotions, bonuses, prime projects) or threats of detrimental treatment regarding current or future employment status.'
+          },
+          {
+            title: 'Hostile Work Environment — Section 3(2)(iv)–(v)',
+            body: 'Occurs when unwelcome conduct interferes with an employee\'s work or creates an intimidating, offensive, humiliating, or hostile work environment. It does not require an explicit demand for favors—pervasive sexist banter, objectification, or post-rejection hostility suffices.'
+          },
+          {
+            title: 'Retaliation & The "Post-Rejection Freeze-Out"',
+            body: 'When an employee politely declines a social/romantic invitation from a superior and is subsequently removed from key accounts, denied mentorship, isolated from team communications, or given biased ratings, it constitutes illegal retaliatory harassment.'
+          }
+        ],
+        comparisonTable: [
+          { aspect: 'Performance Appraisals', safe: 'Evaluating employees strictly on documented KPIs and deliverables.', violation: 'Hinting that a top rating depends on accompanying a manager on personal dinners.' },
+          { aspect: 'Project Allocation', safe: 'Assigning accounts based on skill, bandwidth, and career growth.', violation: 'Sidelining an employee to administrative tasks after she turns down a date.' },
+          { aspect: 'Team Culture', safe: 'Inclusive discussions where all voices are respected.', violation: 'Allowing "locker-room talk" or mocking colleagues who object to inappropriate jokes.' }
+        ],
+        caseLaw: {
+          type: 'HIGH COURT HOSTILE ENVIRONMENT RULING',
+          citation: 'Dr. Punita K. Sodhi v. Union of India & Ors. (2010)',
+          court: 'Delhi High Court',
+          verdictTag: 'Hostile Environment Recognized',
+          facts: 'A woman doctor faced continuous professional humiliation, intrusive hostility, and administrative harassment from a superior officer alongside unwelcome conduct. The defense argued these were mere administrative disagreements.',
+          holding: 'The High Court held that sexual harassment is not limited to physical advances; abuse of authority that creates an intimidating, hostile, or humiliating work environment for a woman violates her fundamental right to work with dignity.',
+          url: 'https://indiankanoon.org/doc/147297170/'
+        },
+        questions: [
+          {
+            id: 'q3_1',
+            scenario: 'Sunita applies for a coveted international secondment to London. Her VP, Sanjay, calls her into his cabin and says: "Sunita, five people applied. Why don\'t we discuss your candidacy over a private dinner at my farmhouse this Saturday? If we connect well, I\'ll make sure you get the London slot." Sunita declines. Next week, her application is rejected without explanation.',
+            question: 'Which specific statutory violation under Section 3(2) has occurred?',
+            options: [
+              { id: 'a', text: 'Routine executive discretion in selecting candidates.' },
+              { id: 'b', text: 'Quid Pro Quo sexual harassment (implied promise of preferential treatment followed by detrimental retaliation).' },
+              { id: 'c', text: 'A purely contractual HR grievance outside the IC\'s scope.' },
+              { id: 'd', text: 'No violation because Sanjay never physically touched Sunita.' }
+            ],
+            correctId: 'b',
+            rationale: 'Correct! Conditioning career advancement on private social compliance and retaliating upon refusal is textbook Quid Pro Quo sexual harassment under Section 3(2)(i) and (ii).'
+          },
+          {
+            id: 'q3_2',
+            scenario: 'After Pooja declines her project manager\'s invitation to go out for drinks, he never brings it up again. However, over the next two months, he stops speaking to her directly, removes her from client pitch decks, and tells peers she has "an attitude problem."',
+            question: 'Does Pooja have grounds for a POSH complaint?',
+            options: [
+              { id: 'a', text: 'No, because he respected her refusal and never asked her out again.' },
+              { id: 'b', text: 'Yes, creating an intimidating, hostile work environment and interfering with work performance after a rejected advance violates Section 3(2)(iv).' },
+              { id: 'c', text: 'No, project allocation is 100% at the manager\'s whim.' },
+              { id: 'd', text: 'Only if her monthly base salary was reduced.' }
+            ],
+            correctId: 'b',
+            rationale: 'Correct! Retaliatory isolation and interference with work performance connected to a rejected personal advance creates a Hostile Work Environment under Section 3(2)(iv).'
+          }
+        ]
+      },
+      {
+        id: 'zone-4',
+        number: 4,
+        title: 'The Hall of Precedents',
+        subtitle: 'Multi-Crore Victim Awards vs. False Alarms (Section 14)',
+        badgeName: 'Precedent Scholar',
+        badgeIcon: '🏛️',
+        badgeColor: 'from-purple-600 to-indigo-700',
+        sectionRef: 'Section 13 (Compensation) & Section 14 (Malicious Complaints)',
+        missionBrief: 'In this critical module, you will examine real Indian court judgments from both sides of the judicial spectrum: a case where the victim was awarded ₹1.68 Crore due to harassment and corporate failure, and a case where a false, weaponized POSH complaint was fined ₹50,000.',
+        concepts: [
+          {
+            title: 'Precedent A (Complainant Awarded ₹1.68 Crore): Ms. G v. ISG Novasoft Technologies Ltd.',
+            body: 'In this landmark Madras High Court judgment, an IT employee faced sustained sexual harassment by her supervisor. Instead of providing an impartial inquiry, the company victim-blamed her and terminated her employment. Holding the employer strictly liable for failing to provide a safe environment, the Court awarded ₹1.68 Crore in damages to the aggrieved woman.'
+          },
+          {
+            title: 'Precedent B (False Alarm Fined ₹50,000): Anita Suresh v. Union of India (2019)',
+            body: 'In this Delhi High Court ruling (W.P.(C) 5114/2015), a complainant filed a vague, uncorroborated sexual harassment complaint years after an alleged incident, timed immediately after she faced disciplinary queries and a transfer order. Finding that she weaponized POSH to settle administrative scores, the Court dismissed her plea and imposed a ₹50,000 fine.'
+          },
+          {
+            title: 'The Vital Section 14 Safeguard: "Unsubstantiated" ≠ "False/Malicious"',
+            body: 'Section 14 penalizes knowingly false or malicious complaints. However, the Statutory Proviso to Section 14 states: "A mere inability to substantiate a complaint or provide adequate proof need not attract action against the complainant." Good-faith complaints lacking eyewitnesses are NEVER penalized; Section 14 applies only when deliberate malice and fabrication are affirmatively proven.'
+          }
+        ],
+        comparisonTable: [
+          { aspect: 'Good-Faith Unproven Claim', safe: 'Complainant experiences harassment in an empty elevator; no CCTV exists. IC finds insufficient evidence.', violation: 'Protected by Proviso to Sec 14: Complainant CANNOT be punished simply because proof was unavailable.' },
+          { aspect: 'Malicious / Fabricated Claim', safe: 'N/A — Deliberate abuse of statutory machinery.', violation: 'Forged chats or conspiring to block a PIP/transfer (Sec 14 applies: disciplinary action & fines).' },
+          { aspect: 'Employer Vicarious Liability', safe: 'Constituting a trained, unbiased IC and enforcing anti-retaliation.', violation: 'Ignoring complaints or firing the complainant (Exposes company to multi-crore damages like ISG Novasoft).' }
+        ],
+        caseLaw: {
+          type: 'DUAL JUDICIAL PRECEDENT COMPARISON',
+          citation: 'Ms. G v. ISG Novasoft (Madras HC)  |  Anita Suresh v. Union of India (Delhi HC, 2019)',
+          court: 'Madras High Court & Delhi High Court',
+          verdictTag: '₹1.68 Cr Victim Award vs. ₹50k False Claim Fine',
+          facts: 'In Ms. G v. ISG Novasoft, institutional failure and retaliation against a genuine victim resulted in a historic ₹1.68 Crore payout. Conversely, in Anita Suresh v. UOI, a belated, detail-free complaint filed solely to dodge an administrative transfer was penalized with ₹50,000 costs.',
+          holding: 'Together, these rulings establish that the POSH Act is a powerful shield for workplace dignity commanding strict employer accountability, but it cannot be weaponized as a sword for personal vendettas.',
+          url: 'https://poshatwork.com/company-pay-rs-1-68-crore-damages-sexual-harassment-madras-high-court/'
+        },
+        questions: [
+          {
+            id: 'q4_1',
+            scenario: 'Radhika files a complaint stating a senior colleague made an explicit proposition in an empty stairwell. There is no CCTV and no witness. After a 90-day inquiry, the IC concludes there is insufficient evidence to prove the charge. The respondent immediately demands that Radhika be terminated under Section 14 for filing a "false complaint."',
+            question: 'How must the Internal Committee rule on the respondent\'s demand under Section 14?',
+            options: [
+              { id: 'a', text: 'Automatically terminate Radhika because her complaint was not proven.' },
+              { id: 'b', text: 'Reject the demand under the Proviso to Section 14, unless affirmative evidence proves Radhika knowingly fabricated the claim with malicious intent.' },
+              { id: 'c', text: 'Deduct ₹50,000 from Radhika\'s salary automatically.' },
+              { id: 'd', text: 'Reverse the original finding and hold the respondent guilty.' }
+            ],
+            correctId: 'b',
+            rationale: 'Correct! The Proviso to Section 14 explicitly protects complainants when a claim cannot be substantiated due to lack of evidence. Penalties under Section 14 require positive proof of deliberate malice and fabrication.'
+          },
+          {
+            id: 'q4_2',
+            scenario: 'In the landmark case of Ms. G v. ISG Novasoft Technologies Ltd. (Madras High Court) and Anita Suresh v. Union of India (Delhi High Court), what twin legal principles were established?',
+            question: 'Select the accurate legal synthesis of both judgments:',
+            options: [
+              { id: 'a', text: 'Employers have zero liability for managers\' actions, and all complainants are fined.' },
+              { id: 'b', text: 'Employers face massive damages (₹1.68 Cr) if they fail to protect victims or retaliate, while individuals who weaponize fabricated POSH claims for administrative leverage face judicial penalties (₹50,000).' },
+              { id: 'c', text: 'POSH inquiries can only be decided by High Courts.' },
+              { id: 'd', text: 'Monetary settlements are mandatory in every case.' }
+            ],
+            correctId: 'b',
+            rationale: 'Correct! Courts enforce strict vicarious liability and heavy damages against negligent/retaliatory employers, while simultaneously penalizing demonstrable abuse of the statutory mechanism.'
+          }
+        ]
+      },
+      {
+        id: 'zone-5',
+        number: 5,
+        title: 'The Shield & The Ally',
+        subtitle: '4D Active Bystander Intervention & IC Redressal Mechanics',
+        badgeName: 'Master Culture Guardian',
+        badgeIcon: '🌟',
+        badgeColor: 'from-rose-500 to-pink-600',
+        sectionRef: 'Sections 4, 9–13 & 16 — IC Redressal & Confidentiality',
+        missionBrief: 'A safe workplace is built by active allies, not passive bystanders. Your final mission is to master the 4D Active Bystander Model (Direct, Distract, Delegate, Delay) and understand the strict statutory rules governing IC inquiries, conciliation, and confidentiality.',
+        concepts: [
+          {
+            title: 'The 4D Active Bystander Framework',
+            body: '(1) DIRECT: Call out inappropriate behavior calmly in the moment. (2) DISTRACT: Create an immediate work diversion to help a cornered colleague exit safely. (3) DELEGATE: Loop in HR, a manager, or an IC member. (4) DELAY: Check in privately with the affected peer afterward and offer witness support.'
+          },
+          {
+            title: 'Conciliation (Section 10) — Strictly No Monetary Settlement',
+            body: 'Before starting an inquiry, the IC may attempt conciliation ONLY if requested in writing by the aggrieved woman. Crucially, Section 10(1) prohibits any monetary settlement as a basis for conciliation—silence can never be bought.'
+          },
+          {
+            title: 'Strict Confidentiality Mandate (Section 16)',
+            body: 'Notwithstanding the Right to Information (RTI) Act, the identities of the complainant, respondent, and witnesses, as well as inquiry proceedings and recommendations, must remain strictly confidential. Breaching confidentiality attracts penalties under Section 17.'
+          }
+        ],
+        comparisonTable: [
+          { aspect: 'Bystander Response', safe: 'Interrupting an uncomfortable cornering with: "Hey, we need you on the client call right now." (Distract)', violation: 'Laughing along or walking away saying "It\'s none of my business."' },
+          { aspect: 'Conciliation (Sec 10)', safe: 'Written apology or mutually agreed reporting-line change requested by the complainant.', violation: 'Pressuring a complainant to accept a cash payout to drop the complaint.' },
+          { aspect: 'Confidentiality (Sec 16)', safe: 'Keeping all IC testimony strictly restricted to the committee.', violation: 'Discussing a pending POSH complaint over pantry gossip or social media.' }
+        ],
+        caseLaw: {
+          type: 'SUPREME COURT GOVERNANCE DIRECTIVE',
+          citation: 'Aureliano Fernandes v. State of Goa & Ors. (2023 LiveLaw SC 424)',
+          court: 'Supreme Court of India',
+          verdictTag: 'Nationwide POSH Audit Ordered',
+          facts: 'Examining serious procedural lapses in how an inquiry was conducted, the Supreme Court noted that even a decade after the POSH Act\'s enactment, serious lacunae persisted in constitution and training of Internal Committees.',
+          holding: 'The Supreme Court held that however lofty the POSH Act\'s provisions may be, it remains a "hollow promise" unless strictly operationalized with trained IC members, adherence to natural justice, and regular orientation.',
+          url: 'https://indiankanoon.org/doc/8682112/'
+        },
+        questions: [
+          {
+            id: 'q5_1',
+            scenario: 'While walking past the breakroom, you notice a senior manager standing uncomfortably close to a new graduate trainee, blocking her exit while asking intrusive questions about her personal life. She has her arms crossed, looks distressed, and is trying to step back.',
+            question: 'As a Culture Guardian applying the 4D Bystander Model, what is the most effective immediate action?',
+            options: [
+              { id: 'a', text: 'Ignore it completely so you don\'t anger the senior manager.' },
+              { id: 'b', text: 'Deploy the "Distract" technique: Walk in, politely interrupt ("Sorry to step in, we need you in Conference Room B for an urgent onboarding check"), and walk her out safely.' },
+              { id: 'c', text: 'Secretly film them and post it in the company Slack general channel.' },
+              { id: 'd', text: 'Wait six months to see if it happens again.' }
+            ],
+            correctId: 'b',
+            rationale: 'Correct! The "Distract" method immediately defuses the power imbalance without escalating tension, giving your colleague a safe exit route, followed by a private "Delay" check-in.'
+          },
+          {
+            id: 'q5_2',
+            scenario: 'An aggrieved employee submits a complaint to the Internal Committee. The respondent offers to pay ₹2,00,000 directly to the complainant during Section 10 conciliation if she withdraws the complaint.',
+            question: 'Is a monetary settlement legally permissible during conciliation under Section 10 of the POSH Act?',
+            options: [
+              { id: 'a', text: 'Yes, if both parties sign a non-disclosure agreement.' },
+              { id: 'b', text: 'No, Section 10(1) explicitly prohibits monetary settlement as a basis of conciliation.' },
+              { id: 'c', text: 'Yes, provided HR approves the amount.' },
+              { id: 'd', text: 'Yes, if the amount is under ₹5,00,000.' }
+            ],
+            correctId: 'b',
+            rationale: 'Correct! The proviso to Section 10(1) strictly forbids monetary settlements in conciliation to ensure wealthy or powerful respondents cannot buy a complainant\'s silence. (Compensation can only be awarded under Section 13 after a full inquiry proves guilt).'
+          }
+        ]
+      }
+    ];
+
+    const IC_TIMELINE_STEPS = [
+      { step: '1', window: 'Within 3 Months', title: 'Filing of Written Complaint (Sec 9)', desc: 'Aggrieved woman submits written complaint to the IC within 3 months of the incident (or last incident in a series). IC may extend this by another 3 months if satisfied that circumstances prevented earlier filing.' },
+      { step: '2', window: 'Within 7 Working Days', title: 'Notice to Respondent (Rule 7)', desc: 'IC forwards a copy of the complaint to the respondent within 7 working days. Respondent must submit a written reply with list of documents/witnesses within 10 working days.' },
+      { step: '3', window: 'Optional Pre-Inquiry', title: 'Conciliation Option (Sec 10)', desc: 'Initiated ONLY at the written request of the complainant. Strictly NO monetary settlement is allowed. If resolved, settlement is recorded and inquiry is not needed.' },
+      { step: '4', window: 'During Pendency', title: 'Interim Relief Safeguards (Sec 12)', desc: 'Upon written request by complainant, IC may recommend: (a) Transfer of complainant or respondent; (b) Granting up to 3 months paid leave (in addition to statutory leave); (c) Restraining respondent from evaluating complainant\'s performance.' },
+      { step: '5', window: 'Within 90 Days', title: 'Quasi-Judicial Inquiry (Sec 11)', desc: 'IC conducts inquiry adhering to Principles of Natural Justice. Both parties get equal opportunity to be heard. Legal practitioners (lawyers) are NOT allowed to represent parties before the IC. Must conclude within 90 days.' },
+      { step: '6', window: 'Within 10 Days of Close', title: 'Submission of Inquiry Report (Sec 13)', desc: 'IC issues its reasoned report and recommendations to the Employer and both parties within 10 days of completing the inquiry.' },
+      { step: '7', window: 'Within 60 Days of Report', title: 'Mandatory Employer Action (Sec 13(4))', desc: 'Employer must act on the IC\'s recommendations within 60 days. Either party may file an appeal before the appellate authority/tribunal within 90 days under Section 18.' }
+    ];
+
+    const ENTERPRISE_ADDITIONS = [
+      {
+        title: '1. Dual-Track Gender-Neutral Corporate Policy',
+        tag: 'Inclusivity & Equity',
+        desc: 'While the statutory POSH Act, 2013 only covers women complainants, progressive enterprises institute a companion Gender-Neutral Harassment Policy under company service rules. This ensures male, transgender, non-binary, and LGBTQ+ employees receive identical investigative protection and interim relief.'
+      },
+      {
+        title: '2. Generative AI & Hybrid Digital Etiquette Policy',
+        tag: 'Future-Ready Governance',
+        desc: 'Explicitly prohibit the use of AI tools to generate deepfakes, non-consensual imagery, or sexually suggestive avatars of colleagues. Establish clear "Right to Disconnect" norms banning non-urgent personal WhatsApp messages after 8:00 PM.'
+      },
+      {
+        title: '3. Automated 12-Month Post-Inquiry Retaliation Tracker',
+        tag: 'Anti-Retaliation',
+        desc: 'Fear of silent career sabotage is the #1 barrier to reporting. Implement an HR governance protocol that audits performance ratings, bonus allocations, and project assignments of complainants and witnesses for 4 quarters post-inquiry, requiring CHRO sign-off for any rating drop.'
+      },
+      {
+        title: '4. Trauma-Informed IC Training & External Member Vetting',
+        tag: 'Procedural Sanctity',
+        desc: 'Train IC members in trauma-informed interviewing so complainants never face moral policing about attire, alcohol consumption, or past conduct. Vet the mandatory External Member (Sec 4(2)(c)) for complete independence from management.'
+      },
+      {
+        title: '5. Mandatory Board Disclosures (Companies Act, 2013)',
+        tag: 'Statutory Audit',
+        desc: 'Ensure strict compliance with Section 134 of the Companies Act, 2013 read with Rule 8(5)(x) of the Companies (Accounts) Rules, 2014 by publishing in the Director\'s Report: complaints received, disposed of, pending >90 days, and awareness workshops held.'
+      }
+    ];
+
+    /*************************************************************************
+     * 2. SCORM 1.2 / 2004 & LOCALSTORAGE ADAPTER (`window.LMSAdapter`)
+     *************************************************************************/
+    const STORAGE_KEY = 'posh_culture_guardian_v1';
+
+    const LMSAdapter = {
+      scormVersion: 'None (Standalone LocalStorage)',
+      apiHandle: null,
+
+      init() {
+        try {
+          if (window.API_1484_11) {
+            this.apiHandle = window.API_1484_11;
+            this.scormVersion = 'SCORM 2004';
+            this.apiHandle.Initialize('');
+          } else if (window.API) {
+            this.apiHandle = window.API;
+            this.scormVersion = 'SCORM 1.2';
+            this.apiHandle.LMSInitialize('');
+          } else if (window.parent && window.parent !== window) {
+            if (window.parent.API_1484_11) {
+              this.apiHandle = window.parent.API_1484_11;
+              this.scormVersion = 'SCORM 2004 (Parent)';
+              this.apiHandle.Initialize('');
+            } else if (window.parent.API) {
+              this.apiHandle = window.parent.API;
+              this.scormVersion = 'SCORM 1.2 (Parent)';
+              this.apiHandle.LMSInitialize('');
+            }
+          }
+        } catch (err) {
+          this.scormVersion = 'Standalone (Sandbox Safe)';
+        }
+      },
+
+      loadState() {
+        let saved = null;
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) saved = JSON.parse(raw);
+        } catch (e) {}
+        return saved || {
+          learnerName: 'Puneet Chadha',
+          currentView: 'welcome',
+          activeZoneTab: 'learn',
+          answers: {},
+          unlockedBadges: [],
+          bystanderSimChoice: null,
+          section14SimTab: 'unproven',
+          startedAt: new Date().toISOString()
+        };
+      },
+
+      saveState(state) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (e) {}
+
+        const score = calculateScore(state);
+        const pct = Math.round((score / 1000) * 100);
+        const status = score >= 800 ? 'passed' : 'incomplete';
+
+        try {
+          if (this.apiHandle) {
+            if (this.scormVersion.includes('2004')) {
+              this.apiHandle.SetValue('cmi.score.raw', String(pct));
+              this.apiHandle.SetValue('cmi.score.scaled', String(pct / 100));
+              this.apiHandle.SetValue('cmi.completion_status', score >= 800 ? 'completed' : 'incomplete');
+              this.apiHandle.SetValue('cmi.success_status', status);
+              this.apiHandle.SetValue('cmi.location', state.currentView);
+              this.apiHandle.SetValue('cmi.suspend_data', JSON.stringify({
+                a: state.answers,
+                b: state.unlockedBadges,
+                n: state.learnerName
+              }));
+              this.apiHandle.Commit('');
+            } else {
+              this.apiHandle.LMSSetValue('cmi.core.score.raw', String(pct));
+              this.apiHandle.LMSSetValue('cmi.core.lesson_status', status);
+              this.apiHandle.LMSSetValue('cmi.core.lesson_location', state.currentView);
+              this.apiHandle.LMSSetValue('cmi.suspend_data', JSON.stringify({
+                a: state.answers,
+                b: state.unlockedBadges,
+                n: state.learnerName
+              }));
+              this.apiHandle.LMSCommit('');
+            }
+          }
+        } catch (e) {}
+      },
+
+      getTelemetryPayload(state) {
+        const rawPts = calculateScore(state);
+        const scaled = (rawPts / 1000).toFixed(2);
+        const totalQuestions = 10;
+        const answeredCount = Object.keys(state.answers).length;
+        return {
+          scorm_runtime_detected: this.scormVersion,
+          cmi: {
+            learner_name: state.learnerName,
+            location: state.currentView,
+            completion_status: answeredCount === totalQuestions ? 'completed' : 'incomplete',
+            success_status: rawPts >= 800 ? 'passed' : 'in_progress',
+            score: {
+              raw_points: rawPts,
+              max_points: 1000,
+              scaled_percentage: Math.round(scaled * 100) + '%',
+              mastery_threshold: '800 pts (80%)'
+            },
+            badges_unlocked: state.unlockedBadges,
+            questions_answered: answeredCount + ' / ' + totalQuestions,
+            suspend_data: {
+              answers: state.answers,
+              badges: state.unlockedBadges
+            }
+          }
+        };
+      }
+    };
+
+    /*************************************************************************
+     * 3. APPLICATION STATE & HELPER FUNCTIONS
+     *************************************************************************/
+    LMSAdapter.init();
+    let appState = LMSAdapter.loadState();
+
+    function calculateScore(state) {
+      let total = 0;
+      COURSE_ZONES.forEach(z => {
+        z.questions.forEach(q => {
+          if (state.answers[q.id] === q.correctId) {
+            total += 100;
+          }
+        });
+      });
+      return total;
+    }
+
+    function isZoneComplete(zone, state) {
+      return zone.questions.every(q => state.answers[q.id] === q.correctId);
+    }
+
+    function syncBadges() {
+      COURSE_ZONES.forEach(z => {
+        if (isZoneComplete(z, appState) && !appState.unlockedBadges.includes(z.id)) {
+          appState.unlockedBadges.push(z.id);
+          showToast(`Badge Unlocked: ${z.badgeIcon} ${z.badgeName}!`, 'emerald');
+        }
+      });
+    }
+
+    function showToast(message, tone = 'indigo') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const bgMap = {
+        indigo: 'bg-indigo-900 border-indigo-500 text-white',
+        emerald: 'bg-emerald-900 border-emerald-400 text-white',
+        amber: 'bg-amber-900 border-amber-400 text-white'
+      };
+      const el = document.createElement('div');
+      el.className = `px-4 py-3 rounded-xl shadow-xl border-l-4 text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all duration-300 ${bgMap[tone] || bgMap.indigo}`;
+      el.innerHTML = `<span>✨</span><span>${message}</span>`;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+      }, 3200);
+    }
+
+    /*************************************************************************
+     * 4. UI RENDERING ENGINE
+     *************************************************************************/
+    function renderAll() {
+      syncBadges();
+      LMSAdapter.saveState(appState);
+
+      const score = calculateScore(appState);
+      const answeredCorrect = score / 100;
+      const pct = Math.round((answeredCorrect / 10) * 100);
+
+      document.getElementById('headerScoreDisplay').textContent = score;
+      document.getElementById('headerBadgeCount').textContent = `${appState.unlockedBadges.length}/5`;
+      document.getElementById('globalProgressBar').style.width = `${pct}%`;
+      document.getElementById('sidebarLearnerName').textContent = appState.learnerName || 'Guardian Recruit';
+      document.getElementById('sidebarCompletionPct').textContent = `${pct}% Complete`;
+
+      renderSidebar();
+      renderMainStage();
+      updateMobileFooterNav();
+    }
+
+    function renderSidebar() {
+      const nav = document.getElementById('questNavList');
+      if (!nav) return;
+
+      const items = [
+        {
+          id: 'welcome',
+          label: 'Mission Briefing & Setup',
+          sub: 'Onboarding Quest Start',
+          icon: '🧭',
+          done: true
+        },
+        ...COURSE_ZONES.map(z => ({
+          id: z.id,
+          label: `Zone ${z.number}: ${z.title}`,
+          sub: z.badgeName,
+          icon: z.badgeIcon,
+          done: isZoneComplete(z, appState)
+        })),
+        {
+          id: 'certificate',
+          label: 'Guardian Certification',
+          sub: calculateScore(appState) >= 800 ? 'Unlocked & Ready!' : 'Requires 800+ Points',
+          icon: '🎓',
+          done: calculateScore(appState) >= 800
+        }
+      ];
+
+      nav.innerHTML = items.map(item => {
+        const active = appState.currentView === item.id;
+        return `
+          <button type="button" data-nav-view="${item.id}" class="w-full text-left px-3 py-2.5 rounded-xl flex items-center justify-between gap-2.5 transition ${
+            active
+              ? 'bg-indigo-600 text-white shadow-sm'
+              : 'text-slate-700 hover:bg-slate-100'
+          }">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <span class="text-lg shrink-0">${item.icon}</span>
+              <div class="truncate">
+                <div class="text-xs font-bold truncate">${item.label}</div>
+                <div class="text-[11px] truncate ${active ? 'text-indigo-200' : 'text-slate-400'}">${item.sub}</div>
+              </div>
+            </div>
+            ${
+              item.done && item.id !== 'welcome'
+                ? `<span class="shrink-0 w-5 h-5 rounded-full ${active ? 'bg-white text-indigo-600' : 'bg-emerald-100 text-emerald-700'} flex items-center justify-center text-xs font-bold">✓</span>`
+                : ''
+            }
+          </button>
+        `;
+      }).join('');
+
+      nav.querySelectorAll('[data-nav-view]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          appState.currentView = btn.getAttribute('data-nav-view');
+          appState.activeZoneTab = 'learn';
+          closeMobileDrawer();
+          renderAll();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      });
+    }
+
+    function renderMainStage() {
+      const container = document.getElementById('mainStageContainer');
+      if (!container) return;
+
+      if (appState.currentView === 'welcome') {
+        container.innerHTML = buildWelcomeHTML();
+        bindWelcomeEvents();
+        return;
+      }
+
+      if (appState.currentView === 'timelines') {
+        container.innerHTML = buildTimelinesHTML();
+        bindSubpageEvents();
+        return;
+      }
+
+      if (appState.currentView === 'additions') {
+        container.innerHTML = buildAdditionsHTML();
+        bindSubpageEvents();
+        return;
+      }
+
+      if (appState.currentView === 'certificate') {
+        container.innerHTML = buildCertificateHTML();
+        bindCertificateEvents();
+        return;
+      }
+
+      const zone = COURSE_ZONES.find(z => z.id === appState.currentView) || COURSE_ZONES[0];
+      container.innerHTML = buildZoneHTML(zone);
+      bindZoneEvents(zone);
+    }
+
+    /*************************************************************************
+     * 5. VIEW TEMPLATES
+     *************************************************************************/
+    function buildWelcomeHTML() {
+      const score = calculateScore(appState);
+      return `
+        <div class="space-y-6">
+          <!-- Hero Card -->
+          <div class="rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white p-5 sm:p-8 shadow-lg border border-indigo-500/20">
+            <div class="flex flex-wrap items-center gap-2 mb-3">
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                Corporate Legal &amp; Ethics Onboarding
+              </span>
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/10 text-slate-200">
+                Indian POSH Act, 2013
+              </span>
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300">
+                Mobile &amp; LMS Ready
+              </span>
+            </div>
+
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight">
+              Welcome to the <span class="text-amber-400">Workplace Culture Guardian</span> Quest
+            </h1>
+            <p class="mt-3 text-slate-300 text-sm sm:text-base leading-relaxed max-w-2xl">
+              Designed from a decade of corporate legal counsel and Internal Committee (IC) experience, this self-learning journey equips you to foster a respectful, high-trust workplace, recognize subtle gray zones, and act as an ethical ally.
+            </p>
+
+            <!-- Learner Personalization Input -->
+            <div class="mt-6 pt-5 border-t border-white/10 flex flex-col sm:flex-row sm:items-end gap-3">
+              <div class="flex-1 max-w-xs">
+                <label for="learnerNameInput" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+                  Your Name (For Official Guardian Certificate)
+                </label>
+                <input id="learnerNameInput" type="text" value="${escapeHtml(appState.learnerName)}" placeholder="Enter your full name" class="w-full px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-400 text-sm focus:outline-none focus:border-amber-400" />
+              </div>
+              <button id="startQuestBtn" type="button" class="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
+                <span>Begin Zone 1: Foundations</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- 3 Pillars Overview -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+              <div class="text-xl mb-1.5">⚖️</div>
+              <h3 class="font-bold text-sm text-slate-900">1. Statutory Clarity</h3>
+              <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                Master Sections 2(a), 2(n), 2(o), 3(2), 10, 12, 14, and 16 of the POSH Act, 2013—including why impact overrides intent and how the Extended Workplace covers hybrid channels.
+              </p>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+              <div class="text-xl mb-1.5">🏛️</div>
+              <h3 class="font-bold text-sm text-slate-900">2. Balanced Judicial Precedents</h3>
+              <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                Explore real cases where victims were awarded <strong>₹1.68 Crore</strong> (<em>Ms. G v. ISG Novasoft</em>) alongside cases where false complaints were fined <strong>₹50,000</strong> (<em>Anita Suresh v. UOI</em>).
+              </p>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+              <div class="text-xl mb-1.5">🛡️</div>
+              <h3 class="font-bold text-sm text-slate-900">3. Gamified Trials &amp; Allyship</h3>
+              <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                Solve 10 workplace scenario trials across 5 zones, practice the 4D Active Bystander Model, earn 1,000 Culture Points, and unlock your Guardian Certificate.
+              </p>
+            </div>
+          </div>
+
+          <!-- Interactive Zone Selector Cards -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-base sm:text-lg font-bold text-slate-900">Select a Quest Zone to Launch</h2>
+              <span class="text-xs font-semibold text-slate-500">Current Score: <strong class="text-indigo-600">${score} / 1000 pts</strong></span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              ${COURSE_ZONES.map(z => {
+                const done = isZoneComplete(z, appState);
+                const qDone = z.questions.filter(q => appState.answers[q.id] === q.correctId).length;
+                return `
+                  <div data-launch-zone="${z.id}" class="cursor-pointer group bg-white hover:border-indigo-500 rounded-xl p-4 border border-slate-200 shadow-2xs transition flex flex-col justify-between">
+                    <div>
+                      <div class="flex items-center justify-between gap-2 mb-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Zone ${z.number}</span>
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${done ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}">
+                          ${done ? '✓ Badge Unlocked' : `${qDone}/2 Trials Passed`}
+                        </span>
+                      </div>
+                      <h3 class="font-bold text-sm sm:text-base text-slate-900 group-hover:text-indigo-600 transition flex items-center gap-2">
+                        <span>${z.badgeIcon}</span>
+                        <span>${z.title}</span>
+                      </h3>
+                      <p class="text-xs text-slate-500 mt-1">${z.subtitle}</p>
+                    </div>
+                    <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-indigo-600">
+                      <span>Reward: ${z.badgeName} (+200 pts)</span>
+                      <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildZoneHTML(zone) {
+      const done = isZoneComplete(zone, appState);
+      const qPassedCount = zone.questions.filter(q => appState.answers[q.id] === q.correctId).length;
+
+      return `
+        <div class="space-y-5">
+          <!-- Zone Header Banner -->
+          <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-2xs">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-bold text-xs">Zone ${zone.number} of 5</span>
+                <span class="text-xs font-medium text-slate-500">${zone.sectionRef}</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${done ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-50 text-amber-800'}">
+                  ${done ? `🏆 ${zone.badgeName} Unlocked!` : `${qPassedCount}/2 Trials Completed`}
+                </span>
+              </div>
+            </div>
+
+            <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 flex items-center gap-2.5">
+              <span>${zone.badgeIcon}</span>
+              <span>${zone.title}</span>
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">${zone.missionBrief}</p>
+
+            <!-- 3-Step Sub-Navigation Tabs -->
+            <div class="grid grid-cols-3 gap-1.5 sm:gap-2 mt-5 p-1 bg-slate-100 rounded-xl">
+              <button type="button" data-zone-tab="learn" class="py-2 px-2.5 rounded-lg text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5 ${
+                appState.activeZoneTab === 'learn' ? 'bg-white text-indigo-700 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+              }">
+                <span>📖</span>
+                <span>1. Concept Drop</span>
+              </button>
+              <button type="button" data-zone-tab="case" class="py-2 px-2.5 rounded-lg text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5 ${
+                appState.activeZoneTab === 'case' ? 'bg-white text-indigo-700 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+              }">
+                <span>⚖️</span>
+                <span>2. Case Precedent</span>
+              </button>
+              <button type="button" data-zone-tab="trial" class="py-2 px-2.5 rounded-lg text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5 ${
+                appState.activeZoneTab === 'trial' ? 'bg-white text-indigo-700 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+              }">
+                <span>🎯</span>
+                <span>3. Scenario Trials (${qPassedCount}/2)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tab Content Area -->
+          <div id="zoneTabBody">
+            ${
+              appState.activeZoneTab === 'learn'
+                ? buildZoneLearnTab(zone)
+                : appState.activeZoneTab === 'case'
+                ? buildZoneCaseTab(zone)
+                : buildZoneTrialTab(zone)
+            }
+          </div>
+        </div>
+      `;
+    }
+
+    function buildZoneLearnTab(zone) {
+      return `
+        <div class="space-y-5">
+          <!-- Concept Cards -->
+          <div class="grid grid-cols-1 gap-3.5">
+            ${zone.concepts.map((c, idx) => `
+              <div class="bg-white rounded-xl p-4 sm:p-5 border border-slate-200 shadow-2xs">
+                <div class="flex items-start gap-3">
+                  <span class="w-7 h-7 rounded-lg bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">${idx + 1}</span>
+                  <div>
+                    <h3 class="font-bold text-sm sm:text-base text-slate-900">${c.title}</h3>
+                    <p class="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">${c.body}</p>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          ${zone.id === 'zone-5' ? buildBystanderInteractiveWidget() : ''}
+
+          <!-- Behavioral Spectrum Matrix -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
+            <div class="px-4 py-3 bg-slate-900 text-white flex items-center justify-between">
+              <h3 class="font-bold text-xs sm:text-sm">Behavioral Boundary Matrix: Acceptable vs. POSH Violation</h3>
+              <span class="text-[11px] text-amber-300">Practical Guide</span>
+            </div>
+            <div class="divide-y divide-slate-200">
+              ${zone.comparisonTable.map(row => `
+                <div class="p-3.5 sm:p-4 grid grid-cols-1 md:grid-cols-12 gap-3 items-start text-xs sm:text-sm">
+                  <div class="md:col-span-3 font-bold text-slate-800">${row.aspect}</div>
+                  <div class="md:col-span-4 p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-950">
+                    <span class="font-bold text-emerald-700 block text-[11px] uppercase mb-0.5">✓ Respectful / Safe</span>
+                    ${row.safe}
+                  </div>
+                  <div class="md:col-span-5 p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-950">
+                    <span class="font-bold text-rose-700 block text-[11px] uppercase mb-0.5">✕ POSH Violation / Risk</span>
+                    ${row.violation}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Next Step CTA -->
+          <div class="flex justify-end">
+            <button type="button" data-go-tab="case" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs sm:text-sm shadow-sm transition flex items-center gap-2">
+              <span>Proceed to Judicial Case Precedent</span>
+              <span>&rarr;</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildBystanderInteractiveWidget() {
+      const tactics = {
+        direct: {
+          title: '1. DIRECT — Speak Up Immediately',
+          when: 'Best when you feel safe and the remark is an overt joke or interruption.',
+          script: '"Hey, that comment isn\'t appropriate for our workplace. Let\'s stay focused on the project sprint."',
+          impact: 'Sets an immediate, visible norm that the team does not tolerate sexually colored banter.'
+        },
+        distract: {
+          title: '2. DISTRACT — Create a Safe Diversion',
+          when: 'Best when a senior person corners a junior colleague or tension is high.',
+          script: '"Hi Neha! Sorry to interrupt, the client just asked for the updated deck in Conference Room A—can you come help me right now?"',
+          impact: 'Breaks the physical/verbal cornering immediately and gives the targeted colleague a natural exit without confrontation.'
+        },
+        delegate: {
+          title: '3. DELEGATE — Escalate to Authority / IC',
+          when: 'Best when power dynamics make direct intervention risky or behavior is repeated.',
+          script: '"I want to confidentially flag an incident I witnessed in the lounge today to our Presiding Officer / HRBP."',
+          impact: 'Activates institutional safeguards while preserving safety.'
+        },
+        delay: {
+          title: '4. DELAY — Check In Privately Afterward',
+          when: 'Always applicable after an incident concludes.',
+          script: '"I saw how uncomfortable that conversation was earlier. Are you okay? If you decide to speak to the IC, I am willing to corroborate what I saw."',
+          impact: 'Eliminates victim isolation and provides crucial witness corroboration.'
+        }
+      };
+      const currentKey = appState.bystanderSimChoice || 'distract';
+      const active = tactics[currentKey];
+
+      return `
+        <div class="bg-gradient-to-br from-indigo-950 to-slate-900 text-white rounded-xl p-4 sm:p-5 border border-indigo-500/30">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Interactive Ally Simulator</span>
+            <span class="text-xs text-slate-300">Tap each D to test intervention scripts</span>
+          </div>
+          <h3 class="font-bold text-sm sm:text-base mb-3">The 4D Active Bystander Intervention Model</h3>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+            ${Object.keys(tactics).map(k => `
+              <button type="button" data-bystander-key="${k}" class="py-2 px-3 rounded-lg text-xs font-bold uppercase tracking-wider transition border ${
+                currentKey === k
+                  ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-sm'
+                  : 'bg-white/10 text-slate-200 border-white/10 hover:bg-white/20'
+              }">
+                ${k}
+              </button>
+            `).join('')}
+          </div>
+          <div class="bg-white/10 rounded-xl p-3.5 border border-white/15 space-y-2 text-xs sm:text-sm">
+            <div class="font-bold text-amber-300">${active.title}</div>
+            <p class="text-slate-300"><strong>When to use:</strong> ${active.when}</p>
+            <p class="p-2.5 rounded-lg bg-slate-950/70 text-emerald-300 font-medium italic">💬 ${active.script}</p>
+            <p class="text-slate-200"><strong>Cultural Impact:</strong> ${active.impact}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildZoneCaseTab(zone) {
+      const c = zone.caseLaw;
+      return `
+        <div class="space-y-5">
+          <!-- Case File Card -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+            <div class="bg-slate-900 text-white p-4 sm:p-5 flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">${c.type}</span>
+                <h3 class="text-base sm:text-lg font-extrabold mt-0.5">${c.citation}</h3>
+                <p class="text-xs text-slate-300">${c.court}</p>
+              </div>
+              <span class="px-3 py-1 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-xs font-bold">
+                ${c.verdictTag}
+              </span>
+            </div>
+
+            <div class="p-4 sm:p-6 space-y-4 text-xs sm:text-sm leading-relaxed">
+              <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                <h4 class="font-bold text-slate-900 uppercase text-xs tracking-wider mb-1">📋 Factual Matrix</h4>
+                <p class="text-slate-700">${c.facts}</p>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-indigo-50/70 border border-indigo-200">
+                <h4 class="font-bold text-indigo-950 uppercase text-xs tracking-wider mb-1">⚖️ Judicial Holding &amp; Legal Principle</h4>
+                <p class="text-indigo-950">${c.holding}</p>
+              </div>
+
+              <div class="flex items-center justify-between pt-2">
+                <a href="${c.url}" target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">
+                  <span>View Case Reference Source</span>
+                  <span>↗</span>
+                </a>
+                <span class="text-[11px] text-slate-400">Verified Indian Judicial Precedent</span>
+              </div>
+            </div>
+          </div>
+
+          ${zone.id === 'zone-4' ? buildSection14InteractiveAnalyzer() : ''}
+
+          <div class="flex items-center justify-between">
+            <button type="button" data-go-tab="learn" class="px-4 py-2 rounded-xl border border-slate-300 bg-white text-slate-700 font-semibold text-xs sm:text-sm hover:bg-slate-50">
+              &larr; Back to Concept Drop
+            </button>
+            <button type="button" data-go-tab="trial" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs sm:text-sm shadow-sm transition">
+              Launch Scenario Trials &rarr;
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildSection14InteractiveAnalyzer() {
+      const mode = appState.section14SimTab || 'unproven';
+      return `
+        <div class="bg-white rounded-2xl p-4 sm:p-5 border-2 border-indigo-100 shadow-2xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">Interactive Legal Simulator</span>
+              <h3 class="font-bold text-sm sm:text-base text-slate-900">Section 14 Analyzer: Unproven Claim vs. Malicious Claim</h3>
+            </div>
+            <div class="flex gap-1.5 bg-slate-100 p-1 rounded-lg shrink-0">
+              <button type="button" data-sec14-mode="unproven" class="px-3 py-1.5 rounded-md text-xs font-bold transition ${
+                mode === 'unproven' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+              }">
+                Case A: Unsubstantiated
+              </button>
+              <button type="button" data-sec14-mode="malicious" class="px-3 py-1.5 rounded-md text-xs font-bold transition ${
+                mode === 'malicious' ? 'bg-rose-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+              }">
+                Case B: Malicious / False
+              </button>
+            </div>
+          </div>
+
+          ${
+            mode === 'unproven'
+              ? `
+              <div class="mt-3 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs sm:text-sm space-y-2">
+                <div class="font-bold text-emerald-900">Scenario: Good-Faith Complaint Without Witnesses</div>
+                <p class="text-emerald-950">An employee reports an unwelcome touch in an empty corridor. No CCTV exists, and the respondent denies it. The IC concludes the charge cannot be proven.</p>
+                <p class="font-semibold text-emerald-800">Legal Outcome under Proviso to Section 14: ZERO Penalty on Complainant.</p>
+                <p class="text-emerald-900 text-xs">The law explicitly states that mere inability to substantiate a complaint or provide adequate proof does NOT attract action under Section 14. Employees should never fear speaking up in good faith.</p>
+              </div>
+              `
+              : `
+              <div class="mt-3 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs sm:text-sm space-y-2">
+                <div class="font-bold text-rose-900">Scenario: Deliberate Fabrication &amp; Forged Evidence (Anita Suresh Pattern)</div>
+                <p class="text-rose-950">An employee facing a transfer or disciplinary inquiry fabricates an allegation and doctored screenshots to stall the transfer. Forensic inquiry proves deliberate falsehood.</p>
+                <p class="font-semibold text-rose-800">Legal Outcome under Section 14 &amp; Rule 10: Disciplinary Action &amp; Fines.</p>
+                <p class="text-rose-900 text-xs">When malicious intent (mens rea) or forged evidence is affirmatively established through inquiry, the IC recommends disciplinary punishment ranging from written apology and salary deduction to termination.</p>
+              </div>
+              `
+          }
+        </div>
+      `;
+    }
+
+    function buildZoneTrialTab(zone) {
+      const allZoneDone = isZoneComplete(zone, appState);
+      const nextZoneIndex = COURSE_ZONES.findIndex(z => z.id === zone.id) + 1;
+      const nextZone = COURSE_ZONES[nextZoneIndex];
+
+      return `
+        <div class="space-y-5">
+          ${zone.questions.map((q, qIdx) => {
+            const selected = appState.answers[q.id];
+            const isCorrect = selected === q.correctId;
+            return `
+              <div class="bg-white rounded-2xl p-4 sm:p-6 border ${
+                selected
+                  ? isCorrect ? 'border-emerald-400 ring-1 ring-emerald-400/40' : 'border-amber-400'
+                  : 'border-slate-200'
+              } shadow-2xs space-y-4">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 font-bold text-xs">
+                    Scenario Trial ${zone.number}.${qIdx + 1}
+                  </span>
+                  <span class="text-xs font-bold ${isCorrect ? 'text-emerald-600' : 'text-amber-600'}">
+                    ${isCorrect ? '✓ +100 Culture Points Earned' : 'Reward: +100 Culture Points'}
+                  </span>
+                </div>
+
+                <!-- Scenario Box -->
+                <div class="p-3.5 rounded-xl bg-slate-50 border-l-4 border-indigo-600 text-xs sm:text-sm text-slate-800 leading-relaxed">
+                  <strong class="block text-indigo-900 mb-1">Workplace Scenario:</strong>
+                  ${q.scenario}
+                </div>
+
+                <div class="font-bold text-sm sm:text-base text-slate-900">${q.question}</div>
+
+                <!-- Options List -->
+                <div class="space-y-2">
+                  ${q.options.map(opt => {
+                    const chosen = selected === opt.id;
+                    const optIsRight = opt.id === q.correctId;
+                    let btnStyle = 'bg-white border-slate-200 text-slate-800 hover:border-indigo-400 hover:bg-indigo-50/30';
+                    if (chosen && optIsRight) {
+                      btnStyle = 'bg-emerald-50 border-emerald-500 text-emerald-950 font-semibold';
+                    } else if (chosen && !optIsRight) {
+                      btnStyle = 'bg-rose-50 border-rose-400 text-rose-950';
+                    } else if (selected && optIsRight) {
+                      btnStyle = 'bg-emerald-50/60 border-emerald-300 text-emerald-900';
+                    }
+
+                    return `
+                      <button type="button" data-question-id="${q.id}" data-option-id="${opt.id}" class="w-full text-left p-3 sm:p-3.5 rounded-xl border text-xs sm:text-sm transition flex items-start gap-3 ${btnStyle}">
+                        <span class="w-6 h-6 rounded-full border border-current flex items-center justify-center text-xs font-bold shrink-0 uppercase mt-0.5">
+                          ${opt.id}
+                        </span>
+                        <span class="flex-1 leading-relaxed">${opt.text}</span>
+                      </button>
+                    `;
+                  }).join('')}
+                </div>
+
+                <!-- Feedback Callout -->
+                ${
+                  selected
+                    ? `
+                    <div class="p-3.5 rounded-xl text-xs sm:text-sm leading-relaxed ${
+                      isCorrect
+                        ? 'bg-emerald-50 border border-emerald-200 text-emerald-950'
+                        : 'bg-amber-50 border border-amber-200 text-amber-950'
+                    }">
+                      <div class="font-bold mb-1">
+                        ${isCorrect ? '✓ Spot On! Legal & Ethical Rationale:' : '⚠️ Not Quite — Try selecting the most accurate legal option above:'}
+                      </div>
+                      <p>${isCorrect ? q.rationale : 'Review how the POSH Act prioritizes recipient impact, extended workplace nexus, and statutory safeguards. Select another option above to unlock your 100 points!'}</p>
+                    </div>
+                    `
+                    : ''
+                }
+              </div>
+            `;
+          }).join('')}
+
+          <!-- Zone Completion Banner -->
+          ${
+            allZoneDone
+              ? `
+              <div class="rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-5 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3.5">
+                  <div class="text-3xl bg-white/15 w-12 h-12 rounded-2xl flex items-center justify-center shrink-0">${zone.badgeIcon}</div>
+                  <div>
+                    <div class="text-xs font-bold uppercase tracking-wider text-emerald-200">Zone ${zone.number} Mastered!</div>
+                    <h3 class="text-base sm:text-lg font-extrabold">${zone.badgeName} Badge Unlocked (+200 Pts)</h3>
+                  </div>
+                </div>
+                ${
+                  nextZone
+                    ? `<button type="button" data-goto-zone="${nextZone.id}" class="px-5 py-2.5 rounded-xl bg-white text-emerald-900 font-bold text-xs sm:text-sm shadow-sm hover:bg-emerald-50 transition shrink-0">
+                        Continue to Zone ${nextZone.number}: ${nextZone.title} &rarr;
+                      </button>`
+                    : `<button type="button" data-goto-zone="certificate" class="px-5 py-2.5 rounded-xl bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm shadow-sm hover:bg-amber-300 transition shrink-0">
+                        Claim Your Guardian Certificate 🎓 &rarr;
+                      </button>`
+                }
+              </div>
+              `
+              : ''
+          }
+        </div>
+      `;
+    }
+
+    function buildTimelinesHTML() {
+      return `
+        <div class="space-y-5">
+          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-2xs">
+            <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Statutory Redressal Workflow</span>
+            <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">Internal Committee (IC) Statutory Timelines</h1>
+            <p class="text-xs sm:text-sm text-slate-600 mt-1">Every employee and manager should know the strict time-bound milestones mandated by the POSH Act, 2013 &amp; Rules.</p>
+          </div>
+
+          <div class="space-y-3">
+            ${IC_TIMELINE_STEPS.map(item => `
+              <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-2xs flex items-start gap-3.5">
+                <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                  ${item.step}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <h3 class="font-bold text-sm sm:text-base text-slate-900">${item.title}</h3>
+                    <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold text-xs">${item.window}</span>
+                  </div>
+                  <p class="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">${item.desc}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="flex justify-start">
+            <button type="button" data-back-welcome="1" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold">&larr; Back to Quest Map</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildAdditionsHTML() {
+      return `
+        <div class="space-y-5">
+          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-2xs">
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Senior Legal Consultant Recommendations</span>
+            <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">Strategic Enterprise &amp; L&amp;D Additions</h1>
+            <p class="text-xs sm:text-sm text-slate-600 mt-1">Beyond bare statutory compliance, these 5 governance upgrades transform organizational culture and protect corporate reputation.</p>
+          </div>
+
+          <div class="grid grid-cols-1 gap-3.5">
+            ${ENTERPRISE_ADDITIONS.map(a => `
+              <div class="bg-white rounded-xl p-4 sm:p-5 border border-slate-200 shadow-2xs">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                  <h3 class="font-bold text-sm sm:text-base text-slate-900">${a.title}</h3>
+                  <span class="px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200 font-semibold text-xs">${a.tag}</span>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">${a.desc}</p>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="flex justify-start">
+            <button type="button" data-back-welcome="1" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold">&larr; Back to Quest Map</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildCertificateHTML() {
+      const score = calculateScore(appState);
+      const passed = score >= 800;
+      const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+
+      return `
+        <div class="space-y-5">
+          ${
+            !passed
+              ? `
+              <div class="p-4 rounded-xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 no-print">
+                <div class="text-xs sm:text-sm text-amber-950">
+                  <strong>Mastery Threshold Not Yet Reached (${score} / 800 pts required):</strong> Complete the remaining Scenario Trials across the 5 Zones—or click "Unlock Full Pass" to preview the certificate layout now.
+                </div>
+                <button id="certUnlockPreviewBtn" type="button" class="px-3.5 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shrink-0">
+                  Unlock Full Pass (1000 Pts)
+                </button>
+              </div>
+              `
+              : ''
+          }
+
+          <!-- Printable Certificate Card -->
+          <div class="bg-white rounded-2xl p-6 sm:p-10 border-4 border-double border-indigo-900 shadow-xl text-center relative overflow-hidden">
+            <div class="max-w-xl mx-auto space-y-4">
+              <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-400/20 border border-amber-400 text-3xl">
+                🛡️
+              </div>
+              <div class="text-xs font-bold uppercase tracking-widest text-indigo-700">
+                Certificate of Ethical Mastery &amp; Statutory Compliance
+              </div>
+              <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                Accredited Workplace Culture Guardian
+              </h1>
+              <p class="text-xs sm:text-sm text-slate-500">This certifies that</p>
+              <div class="text-xl sm:text-2xl font-extrabold text-indigo-900 border-b-2 border-slate-200 pb-2 inline-block px-8">
+                ${escapeHtml(appState.learnerName || 'Culture Guardian')}
+              </div>
+              <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                has completed the interactive self-learning onboarding curriculum on the <strong>Sexual Harassment of Women at Workplace (Prevention, Prohibition and Redressal) Act, 2013</strong>, demonstrating mastery of physical &amp; digital boundaries, landmark Indian case jurisprudence, Section 14 safeguards, and active 4D bystander allyship.
+              </p>
+
+              <!-- Badges Row -->
+              <div class="pt-3 flex flex-wrap items-center justify-center gap-2">
+                ${COURSE_ZONES.map(z => `
+                  <span class="px-2.5 py-1 rounded-full text-xs font-semibold border ${
+                    appState.unlockedBadges.includes(z.id)
+                      ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                      : 'bg-slate-100 border-slate-200 text-slate-400'
+                  }">
+                    ${z.badgeIcon} ${z.badgeName}
+                  </span>
+                `).join('')}
+              </div>
+
+              <div class="pt-6 mt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+                <div>
+                  <strong class="text-slate-800 block">Final Culture Score: ${score} / 1,000 Pts</strong>
+                  <span>Status: ${passed ? 'PASSED WITH DISTINCTION' : 'IN PROGRESS'}</span>
+                </div>
+                <div>
+                  <strong class="text-slate-800 block">Date Issued: ${dateStr}</strong>
+                  <span>POSH Act, 2013 Compliance Verification</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-3 no-print">
+            <button type="button" data-back-welcome="1" class="px-4 py-2 rounded-xl border border-slate-300 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50">
+              &larr; Back to Overview
+            </button>
+            <button id="printCertBtn" type="button" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold shadow-sm flex items-center gap-2">
+              <span>🖨️ Print / Save Certificate as PDF</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    /*************************************************************************
+     * 6. EVENT BINDINGS & INTERACTIVITY
+     *************************************************************************/
+    function bindWelcomeEvents() {
+      const nameInput = document.getElementById('learnerNameInput');
+      if (nameInput) {
+        nameInput.addEventListener('input', e => {
+          appState.learnerName = e.target.value;
+          document.getElementById('sidebarLearnerName').textContent = appState.learnerName || 'Guardian Recruit';
+          LMSAdapter.saveState(appState);
+        });
+      }
+
+      const startBtn = document.getElementById('startQuestBtn');
+      if (startBtn) {
+        startBtn.addEventListener('click', () => {
+          appState.currentView = 'zone-1';
+          appState.activeZoneTab = 'learn';
+          renderAll();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+
+      document.querySelectorAll('[data-launch-zone]').forEach(card => {
+        card.addEventListener('click', () => {
+          appState.currentView = card.getAttribute('data-launch-zone');
+          appState.activeZoneTab = 'learn';
+          renderAll();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      });
+    }
+
+    function bindZoneEvents(zone) {
+      document.querySelectorAll('[data-zone-tab]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          appState.activeZoneTab = btn.getAttribute('data-zone-tab');
+          renderAll();
+        });
+      });
+
+      document.querySelectorAll('[data-go-tab]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          appState.activeZoneTab = btn.getAttribute('data-go-tab');
+          renderAll();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      });
+
+      document.querySelectorAll('[data-bystander-key]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          appState.bystanderSimChoice = btn.getAttribute('data-bystander-key');
+          renderAll();
+        });
+      });
+
+      document.querySelectorAll('[data-sec14-mode]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          appState.section14SimTab = btn.getAttribute('data-sec14-mode');
+          renderAll();
+        });
+      });
+
+      document.querySelectorAll('[data-question-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const qId = btn.getAttribute('data-question-id');
+          const optId = btn.getAttribute('data-option-id');
+          const prevAns = appState.answers[qId];
+          appState.answers[qId] = optId;
+
+          const qObj = zone.questions.find(q => q.id === qId);
+          if (qObj && optId === qObj.correctId && prevAns !== qObj.correctId) {
+            showToast('+100 Culture Points Earned!', 'indigo');
+          }
+          renderAll();
+        });
+      });
+
+      document.querySelectorAll('[data-goto-zone]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          appState.currentView = btn.getAttribute('data-goto-zone');
+          appState.activeZoneTab = 'learn';
+          renderAll();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      });
+    }
+
+    function bindSubpageEvents() {
+      document.querySelectorAll('[data-back-welcome]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          appState.currentView = 'welcome';
+          renderAll();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      });
+    }
+
+    function bindCertificateEvents() {
+      bindSubpageEvents();
+      const unlockBtn = document.getElementById('certUnlockPreviewBtn');
+      if (unlockBtn) {
+        unlockBtn.addEventListener('click', () => {
+          simulateFullCompletion();
+        });
+      }
+      const printBtn = document.getElementById('printCertBtn');
+      if (printBtn) {
+        printBtn.addEventListener('click', () => {
+          window.print();
+        });
+      }
+    }
+
+    function simulateFullCompletion() {
+      COURSE_ZONES.forEach(z => {
+        z.questions.forEach(q => {
+          appState.answers[q.id] = q.correctId;
+        });
+        if (!appState.unlockedBadges.includes(z.id)) {
+          appState.unlockedBadges.push(z.id);
+        }
+      });
+      showToast('Simulated 1,000/1,000 Culture Points & All 5 Badges!', 'emerald');
+      renderAll();
+      updateLmsModalContent();
+    }
+
+    /*************************************************************************
+     * 7. GLOBAL NAVIGATION & MODALS
+     *************************************************************************/
+    const VIEW_ORDER = ['welcome', 'zone-1', 'zone-2', 'zone-3', 'zone-4', 'zone-5', 'certificate'];
+
+    function updateMobileFooterNav() {
+      const idx = VIEW_ORDER.indexOf(appState.currentView);
+      const prevBtn = document.getElementById('mobilePrevBtn');
+      const nextBtn = document.getElementById('mobileNextBtn');
+      const labelBtn = document.getElementById('mobileMapQuickBtn');
+
+      if (prevBtn) prevBtn.disabled = idx <= 0;
+      if (nextBtn) nextBtn.disabled = idx === -1 || idx >= VIEW_ORDER.length - 1;
+      if (labelBtn) {
+        const z = COURSE_ZONES.find(x => x.id === appState.currentView);
+        labelBtn.textContent = z ? `Zone ${z.number}: ${z.title}` : 'Course Menu';
+      }
+    }
+
+    function openMobileDrawer() {
+      document.getElementById('sidebarNav').classList.remove('-translate-x-full');
+      document.getElementById('mobileBackdrop').classList.remove('hidden');
+    }
+
+    function closeMobileDrawer() {
+      document.getElementById('sidebarNav').classList.add('-translate-x-full');
+      document.getElementById('mobileBackdrop').classList.add('hidden');
+    }
+
+    function updateLmsModalContent() {
+      const payload = LMSAdapter.getTelemetryPayload(appState);
+      const pre = document.getElementById('scormPayloadPre');
+      const badge = document.getElementById('scormConnectionBadge');
+      if (pre) pre.textContent = JSON.stringify(payload, null, 2);
+      if (badge) badge.textContent = `Runtime: ${LMSAdapter.scormVersion}`;
+    }
+
+    function renderBadgesModal() {
+      const grid = document.getElementById('badgesModalGrid');
+      if (!grid) return;
+      grid.innerHTML = COURSE_ZONES.map(z => {
+        const unlocked = appState.unlockedBadges.includes(z.id);
+        return `
+          <div class="p-3.5 rounded-xl border ${
+            unlocked ? 'bg-emerald-50/70 border-emerald-300' : 'bg-slate-50 border-slate-200 opacity-60'
+          } flex items-center gap-3">
+            <div class="text-2xl w-10 h-10 rounded-xl bg-white shadow-2xs flex items-center justify-center shrink-0">
+              ${z.badgeIcon}
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-slate-900 truncate">${z.badgeName}</div>
+              <div class="text-[11px] text-slate-500 truncate">Zone ${z.number}: ${z.title}</div>
+              <div class="text-[10px] font-bold uppercase mt-0.5 ${unlocked ? 'text-emerald-700' : 'text-slate-400'}">
+                ${unlocked ? '✓ Unlocked' : 'Locked'}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('mobileMenuBtn').addEventListener('click', openMobileDrawer);
+      document.getElementById('mobileMapQuickBtn').addEventListener('click', openMobileDrawer);
+      document.getElementById('closeMobileMenuBtn').addEventListener('click', closeMobileDrawer);
+      document.getElementById('mobileBackdrop').addEventListener('click', closeMobileDrawer);
+
+      document.getElementById('mobilePrevBtn').addEventListener('click', () => {
+        const idx = VIEW_ORDER.indexOf(appState.currentView);
+        if (idx > 0) {
+          appState.currentView = VIEW_ORDER[idx - 1];
+          appState.activeZoneTab = 'learn';
+          renderAll();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+      document.getElementById('mobileNextBtn').addEventListener('click', () => {
+        const idx = VIEW_ORDER.indexOf(appState.currentView);
+        if (idx >= 0 && idx < VIEW_ORDER.length - 1) {
+          appState.currentView = VIEW_ORDER[idx + 1];
+          appState.activeZoneTab = 'learn';
+          renderAll();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+
+      document.getElementById('navTimelineBtn').addEventListener('click', () => {
+        appState.currentView = 'timelines';
+        closeMobileDrawer();
+        renderAll();
+      });
+      document.getElementById('navAdditionsBtn').addEventListener('click', () => {
+        appState.currentView = 'additions';
+        closeMobileDrawer();
+        renderAll();
+      });
+
+      const lmsModal = document.getElementById('lmsModal');
+      document.getElementById('openLmsPanelBtn').addEventListener('click', () => {
+        updateLmsModalContent();
+        lmsModal.classList.remove('hidden');
+        lmsModal.classList.add('flex');
+      });
+      document.getElementById('closeLmsModalBtn').addEventListener('click', () => {
+        lmsModal.classList.add('hidden');
+        lmsModal.classList.remove('flex');
+      });
+
+      document.getElementById('simulateCompleteBtn').addEventListener('click', () => {
+        simulateFullCompletion();
+      });
+
+      document.getElementById('resetProgressBtn').addEventListener('click', () => {
+        appState.answers = {};
+        appState.unlockedBadges = [];
+        appState.currentView = 'welcome';
+        appState.activeZoneTab = 'learn';
+        renderAll();
+        updateLmsModalContent();
+        showToast('Course progress reset to 0 points.', 'amber');
+      });
+
+      document.getElementById('downloadManifestBtn').addEventListener('click', () => {
+        const xml = `<?xml version="1.0" standalone="no" ?>
+<manifest identifier="com.enterprise.posh.cultureguardian" version="1.0"
+          xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+          xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+  <organizations default="ORG-POSH-1">
+    <organization identifier="ORG-POSH-1">
+      <title>POSH Gamified Onboarding: The Workplace Culture Guardian</title>
+      <item identifier="ITEM-POSH-1" identifierref="RES-POSH-1">
+        <title>The Workplace Culture Guardian Journey</title>
+        <adlcp:masteryscore>80</adlcp:masteryscore>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="RES-POSH-1" type="webcontent" adlcp:scormtype="sco" href="posh_culture_guardian_lms.html">
+      <file href="posh_culture_guardian_lms.html"/>
+    </resource>
+  </resources>
+</manifest>`;
+        const blob = new Blob([xml], { type: 'application/xml' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'imsmanifest.xml';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('Downloaded SCORM 1.2 imsmanifest.xml!', 'emerald');
+      });
+
+      document.getElementById('copyJsonStateBtn').addEventListener('click', () => {
+        const text = JSON.stringify(LMSAdapter.getTelemetryPayload(appState), null, 2);
+        try {
+          navigator.clipboard.writeText(text);
+        } catch (e) {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          ta.remove();
+        }
+        showToast('Copied SCORM Telemetry JSON to clipboard!', 'indigo');
+      });
+
+      const badgesModal = document.getElementById('badgesModal');
+      document.getElementById('openBadgesBtn').addEventListener('click', () => {
+        renderBadgesModal();
+        badgesModal.classList.remove('hidden');
+        badgesModal.classList.add('flex');
+      });
+      const closeBadges = () => {
+        badgesModal.classList.add('hidden');
+        badgesModal.classList.remove('flex');
+      };
+      document.getElementById('closeBadgesModalBtn').addEventListener('click', closeBadges);
+      document.getElementById('closeBadgesModalFooterBtn').addEventListener('click', closeBadges);
+
+      renderAll();
+    });
+  </script>
+</body>
+</html>

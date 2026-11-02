@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VLT Grade 7</title>
+<style>
+:root{
+  --bg:#eef2f7;--ink:#172033;--muted:#64748b;--card:#fff;
+  --accent:#315efb;--accent2:#e9efff;--line:#dbe2ec;
+  --green:#eaf7ef;--greenInk:#176b3a;--greenBorder:#83c79e;
+  --tm:#eadfe3;--tmInk:#623f4d;--tmBorder:#b99aa7;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+.deck{max-width:1120px;margin:0 auto;padding:24px}
+.slide{
+ display:none;background:var(--card);min-height:650px;border:1px solid var(--line);
+ border-radius:22px;padding:48px;box-shadow:0 12px 35px rgba(20,35,60,.08)
+}
+.slide.active{display:flex;flex-direction:column}
+h1{font-size:44px;line-height:1.08;margin:0 0 20px}
+h2{font-size:34px;line-height:1.15;margin:0 0 22px}
+h3{font-size:22px;margin:8px 0 12px}
+p{font-size:19px;line-height:1.55}
+.lead{font-size:23px;line-height:1.5;color:#334155}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:20px}
+.card{border:1px solid var(--line);border-radius:16px;padding:22px;background:#fafcff}
+.wide{grid-column:1/-1}
+.prompt{background:var(--accent2);border-left:5px solid var(--accent);padding:18px 20px;border-radius:10px;margin:18px 0}
+.keep{
+ background:#f7f9fc;border:1px solid #cbd5e1;border-radius:12px;
+ padding:13px 17px;margin-bottom:22px;font-weight:700;color:#334155
+}
+.response{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+.response button,.revealBtn{
+ border:1px solid #c9d3e3;background:#fff;padding:13px 18px;border-radius:10px;
+ font-size:16px;cursor:pointer;transition:.18s
+}
+.response button:hover,.revealBtn:hover{background:#f5f8ff}
+.response button.selected-correct{background:var(--green);color:var(--greenInk);border-color:var(--greenBorder)}
+.response button.selected-indicative{background:var(--tm);color:var(--tmInk);border-color:var(--tmBorder)}
+.feedback{margin-top:14px;padding:14px 17px;border-radius:10px;display:none;line-height:1.45}
+.feedback.show{display:block}
+.feedback.correct{background:var(--green);color:var(--greenInk)}
+.feedback.indicative{background:var(--tm);color:var(--tmInk)}
+.ack{display:none;margin-top:14px;padding:11px 15px;border-radius:10px;background:#f1f5f9;color:#475569;font-size:15px;font-weight:600}
+.ack.show{display:block}
+.note{background:#f8fafc;border:1px dashed #cbd5e1;padding:14px 16px;border-radius:12px;margin-top:15px}
+.sequence{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+.step{padding:10px 13px;background:#f1f5f9;border-radius:999px;font-size:15px}
+.step.target{background:var(--accent);color:#fff}
+.revealBox{display:none;margin-top:15px}
+.revealBox.show{display:block}
+.revealBtn[disabled]{opacity:.65;cursor:default}
+.footer{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
+.progress{height:7px;background:#dce3ed;border-radius:20px;overflow:hidden;flex:1;margin:0 16px}
+.bar{height:100%;background:var(--accent);width:0;transition:.2s}
+.nav{display:flex;gap:10px}
+.nav button{
+ background:var(--ink);color:#fff;border:1px solid var(--ink);
+ padding:12px 18px;border-radius:10px;font-size:16px;min-width:100px;cursor:pointer
+}
+.nav button.finish{background:#176b3a;border-color:#176b3a}
+.nav button:disabled{opacity:.85;cursor:default}
+.counter{font-size:15px;color:var(--muted)}
+.finish-screen{text-align:center;margin:auto;max-width:720px}
+.finish-icon{
+ width:72px;height:72px;border-radius:50%;background:var(--green);color:var(--greenInk);
+ display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 20px
+}
+@media(max-width:750px){
+ .slide{padding:28px;min-height:650px}h1{font-size:35px}h2{font-size:28px}
+ .grid{grid-template-columns:1fr}p{font-size:17px}
+}
+</style>
+</head>
+<body>
+<div class="deck">
+
+<section class="slide active">
+<h1>News Analysis</h1>
+<p class="lead">We will first understand what we are reading, then read the complete set of news items. We will do this so that we can return to the text, examine the information it gives us, and identify the problem and solution in the informational text.</p>
+<div class="card">
+<h3>Why are we reading this way?</h3>
+<p>Because understanding what we read helps us examine the information presented in it.</p>
+</div>
+</section>
+
+<section class="slide">
+<h2>What does “News Analysis” suggest?</h2>
+<p>Look at the title before reading the news items.</p>
+<div class="response">
+<button data-type="indicative" onclick="choose(this,'f2','News analysis means we examine the information presented in the news.')">Just read the story</button>
+<button data-type="correct" onclick="choose(this,'f2','Correct. News analysis involves examining the information presented in the news.')">Examine the information</button>
+<button data-type="indicative" onclick="choose(this,'f2','The title suggests that we examine the information rather than accept every statement without examination.')">Believe every statement</button>
+</div>
+<div id="f2" class="feedback"></div>
+<div id="a2" class="ack">Response registered.</div>
+</section>
+
+<section class="slide">
+<h2>News</h2>
+<div class="keep">Keep in mind: What does “news” give us?</div>
+<div class="card">
+<h3>What is “news”?</h3>
+<button class="revealBtn" onclick="revealNews()">Reveal Oxford Dictionary meaning</button>
+<div id="newsMeaning" class="revealBox note">“New information about something that has happened recently.”</div>
+</div>
+
+<div id="infoArea" class="card revealBox" style="margin-top:18px">
+<h3>Information</h3>
+<button class="revealBtn" onclick="reveal('infoMeaning',this)">Reveal Oxford Dictionary meaning</button>
+<div id="infoMeaning" class="revealBox note">“Facts or details about somebody/something.”</div>
+</div>
+</section>
+
+<section class="slide">
+<h2>Article</h2>
+<div class="keep">Keep in mind: “Article” is a separate concept.</div>
+<div class="card">
+<h3>What is an “article”?</h3>
+<button class="revealBtn" onclick="reveal('articleMeaning',this)">Reveal Oxford Dictionary meaning</button>
+<div id="articleMeaning" class="revealBox note">“A piece of writing about a particular subject in a newspaper or magazine, on a website, etc.”</div>
+</div>
+</section>
+
+<section class="slide">
+<h2>News + Information + Article</h2>
+<div class="keep">Keep this in mind while reading: What kind of information are we receiving in a news article?</div>
+<div class="sequence">
+<span class="step">News</span>
+<span class="step">Information</span>
+<span class="step">Article</span>
+<span class="step target">Reading Critically</span>
+</div>
+</section>
+
+<section class="slide">
+<h2>Read the four news items</h2>
+<div class="keep">Keep in mind: What information is being presented, and how is it presented?</div>
+<p class="lead">Read all four news items in sequence from the textbook, pages 71–73.</p>
+<div class="grid">
+<div class="card"><h3>Ritika Takes a Break from Acting</h3></div>
+<div class="card"><h3>Closed Shoes Not Allowed in Examination Halls</h3></div>
+<div class="card"><h3>Most Dangerous Time in History</h3></div>
+<div class="card"><h3>Quick Cure for All Ailments?</h3></div>
+</div>
+</section>
+
+<section class="slide">
+<h2>Look across the four articles</h2>
+<div class="grid">
+<div class="card"><h3>What is reported?</h3><p>What event, statement or situation does the article present?</p></div>
+<div class="card"><h3>Who says it?</h3><p>Who is the source, speaker, institution or person being referred to?</p></div>
+<div class="card"><h3>What does the text establish?</h3><p>What can we point to directly in the wording?</p></div>
+<div class="card"><h3>What can we infer?</h3><p>What conclusion can we draw from the evidence?</p></div>
+</div>
+</section>
+
+<section class="slide">
+<h2>Who is saying what?</h2>
+<p>Ritika Takes a Break from Acting</p>
+<div class="grid">
+<div class="card"><h3>Ritika</h3><p>The article reports that she spoke to journalists and said she would not sign more films after completing “Ant”.</p></div>
+<div class="card"><h3>Sources close to her</h3><p>The article separately says that sources close to her reveal that she now wants a career in politics.</p></div>
+</div>
+<div class="prompt"><b>Are these two pieces of information presented in exactly the same way?</b></div>
+<div class="response">
+<button data-type="indicative" onclick="choose(this,'f8','Look again at the sources. The article identifies different sources for the two pieces of information.')">Yes</button>
+<button data-type="correct" onclick="choose(this,'f8','Correct. The article identifies different sources for the two pieces of information.')">No</button>
+</div>
+<div id="f8" class="feedback"></div>
+<div id="a8" class="ack">Response registered.</div>
+</section>
+
+<section class="slide">
+<h2>Reported information</h2>
+<div class="keep">Keep in mind: Identify the source before deciding how to understand the information.</div>
+<p>Ritika Takes a Break from Acting</p>
+<p>Quick Cure for All Ailments?</p>
+<div class="grid">
+<div class="card"><h3>Ritika Takes a Break from Acting</h3><p>Information is attributed to Ritika and separately to sources close to her.</p></div>
+<div class="card"><h3>Quick Cure for All Ailments?</h3><p>Different statements are attributed to Miribaba, his followers and Dr Karnik.</p></div>
+</div>
+</section>
+
+<section class="slide">
+<h2>Claim and report</h2>
+<div class="keep">Keep in mind: What does the article give us directly, and what do we still have to evaluate?</div>
+<p>Quick Cure for All Ailments?</p>
+<div class="grid">
+<div class="card"><h3>Miribaba’s claim</h3><p>He claims the powder cures all sorts of diseases.</p></div>
+<div class="card"><h3>Followers’ claim</h3><p>Some followers claim they have seen him cure thousands of people.</p></div>
+<div class="card wide"><h3>Dr Karnik’s information</h3><p>He says the number of patients at the hospital has actually increased in the last few weeks.</p></div>
+</div>
+</section>
+
+<section class="slide">
+<h2>What can we infer?</h2>
+<div class="keep">Keep in mind: Is the reason stated directly, or do we have to infer it?</div>
+<p>Closed Shoes Not Allowed in Examination Halls</p>
+<div class="card"><p>The institute lists restrictions on footwear, electronic gadgets, papers, pouches and pens; pens will be supplied by invigilators.</p></div>
+<div class="prompt"><b>What might these measures be intended to prevent?</b></div>
+<div class="response">
+<button data-type="indicative" onclick="choose(this,'f11','The article does not directly state this reason. Look at the restrictions and draw a conclusion from them.')">The article explicitly states that this is the reason.</button>
+<button data-type="correct" onclick="choose(this,'f11','Correct. This is an inference supported by the restrictions; the article does not directly state the reason.')">It can be inferred, but is not directly stated.</button>
+</div>
+<div id="f11" class="feedback"></div>
+<div id="a11" class="ack">Response registered.</div>
+</section>
+
+<section class="slide">
+<h2>Why is it news?</h2>
+<div class="keep">Keep in mind: Think about the information, the source and why another publication might report it.</div>
+<p>Most Dangerous Time in History</p>
+<p>The article reports Stephen Hawking’s warning about climate change, overpopulation and epidemic diseases and notes that he wrote about the problem in <i>The Guardian</i>.</p>
+<div class="prompt"><b>Why is it given as “news” in other papers?</b></div>
+</section>
+
+<!-- Problem comes before Process -->
+<section class="slide">
+<h2>Identify the problem</h2>
+<div class="keep">Keep in mind: Say the problem in your own words.</div>
+<p>What problem does the reader face when reading an informational/news text like these?</p>
+<button class="revealBtn" onclick="reveal('problemReveal',this)">Reveal one possible way to frame the problem</button>
+<div id="problemReveal" class="revealBox note">
+A non-fiction/news text can contain reported information alongside claims, viewpoints, interpretations, and information from which the reader draws an inference. The reader therefore needs to examine who says what, what the text establishes, and what conclusion is supported by the evidence.
+</div>
+</section>
+
+<section class="slide">
+<h2>How do we read through that problem?</h2>
+<div class="keep">Keep in mind: Use the text to support your conclusion.</div>
+<div class="sequence">
+<span class="step target">1. Identify source</span>
+<span class="step target">2. Examine wording</span>
+<span class="step target">3. Distinguish report / claim / inference</span>
+<span class="step target">4. Use textual evidence</span>
+<span class="step target">5. Reach a conclusion</span>
+</div>
+<div class="prompt"><b>Which step helps us distinguish the kinds of information?</b></div>
+<div class="response">
+<button data-type="correct" onclick="choose(this,'f14','Correct. Identifying the source and examining the wording helps us distinguish how information is presented.')">Identify the source / examine the wording</button>
+<button data-type="indicative" onclick="choose(this,'f14','We need evidence from the text rather than guessing what the writer means.')">Guess what the writer means</button>
+</div>
+<div id="f14" class="feedback"></div>
+<div id="a14" class="ack">Response registered.</div>
+</section>
+
+<section class="slide">
+<h2>What is the solution?</h2>
+<div class="card">
+<h3>Read non-fiction critically.</h3>
+<p>Distinguish what the text establishes from what is claimed or inferred, identify the source of information, and support conclusions with textual evidence.</p>
+</div>
+<p class="lead">Identify the problem and solution in the informational text.</p>
+</section>
+
+<section class="slide">
+<div class="finish-screen">
+<div class="finish-icon">✓</div>
+<h1>Finished</h1>
+<p class="lead">You have completed News Analysis.</p>
+<div class="card"><b>Exit statement</b><p>“When I read a news article, I should examine the information and support my conclusion with evidence.”</p></div>
+</div>
+</section>
+
+<div class="footer">
+<div class="nav">
+<button id="backBtn" onclick="prev()">← Back</button>
+<button id="nextBtn" onclick="next()">Next →</button>
+</div>
+<div class="progress"><div class="bar" id="bar"></div></div>
+<div class="counter" id="counter">1 / 15</div>
+</div>
+</div>
+
+<script>
+let i=0;
+const slides=[...document.querySelectorAll('.slide')];
+
+function show(n){
+ i=Math.max(0,Math.min(slides.length-1,n));
+ slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+ document.getElementById('counter').textContent=(i+1)+' / '+slides.length;
+ document.getElementById('bar').style.width=((i+1)/slides.length*100)+'%';
+ document.getElementById('nextBtn').textContent=i===slides.length-1?'Finish':'Next →';
+ document.getElementById('nextBtn').classList.toggle('finish',i===slides.length-1);
+ document.getElementById('backBtn').style.visibility=i===0?'hidden':'visible';
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+function next(){
+ if(i===slides.length-1){
+   document.getElementById('nextBtn').textContent='Finished ✓';
+   document.getElementById('nextBtn').disabled=true;
+   return;
+ }
+ show(i+1);
+}
+function prev(){show(i-1)}
+
+function choose(btn,id,msg){
+ const box=btn.parentElement;
+ [...box.querySelectorAll('button')].forEach(b=>b.classList.remove('selected-correct','selected-indicative'));
+ btn.classList.add(btn.dataset.type==='correct'?'selected-correct':'selected-indicative');
+ const el=document.getElementById(id);
+ el.textContent=msg;
+ el.className='feedback show '+(btn.dataset.type==='correct'?'correct':'indicative');
+ const ack=document.getElementById('a'+id.slice(1));
+ if(ack) ack.classList.add('show');
+}
+
+function reveal(id,btn){
+ const el=document.getElementById(id);
+ el.classList.add('show');
+ btn.textContent='Revealed';
+ btn.disabled=true;
+}
+
+function revealNews(){
+ const meaning=document.getElementById('newsMeaning');
+ meaning.classList.add('show');
+ const area=document.getElementById('infoArea');
+ area.classList.add('show');
+ const buttons=document.querySelectorAll('#infoArea .revealBtn');
+ if(buttons.length) buttons[0].focus();
+}
+
+document.addEventListener('keydown',e=>{
+ if(e.key==='ArrowRight')next();
+ if(e.key==='ArrowLeft')prev();
+});
+show(0);
+</script>
+</body>
+</html>

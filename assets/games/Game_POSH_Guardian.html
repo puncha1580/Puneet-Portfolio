@@ -1,0 +1,2519 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>The Sands of Dignity — 5-Level POSH Action Platformer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Cinzel', 'Georgia', 'serif'],
+            sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100dvh; overflow: hidden;
+      background-color: #070510; color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .font-display { font-family: 'Cinzel', Georgia, serif; }
+
+    /* Ancient Rolled Parchment Scroll Styling ("Scroll the Scroll") */
+    .parchment-scroll {
+      background:
+        radial-gradient(circle at 50% 30%, rgba(254, 243, 199, 0.98) 0%, rgba(2fde, 230, 138, 0.96) 58%, rgba(217, 179, 110, 0.97) 100%);
+      background-color: #f6e5c0;
+      color: #291809;
+      box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.9),
+        inset 0 0 36px rgba(120, 53, 15, 0.38);
+      border-left: 6px solid #92400e;
+      border-right: 6px solid #92400e;
+    }
+    .scroll-roller {
+      height: 22px;
+      background: linear-gradient(90deg, #3b1704 0%, #92400e 12%, #f59e0b 50%, #92400e 88%, #3b1704 100%);
+      border-top: 2px solid #fde68a;
+      border-bottom: 3px solid #271002;
+      border-radius: 9999px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.8);
+      position: relative;
+    }
+    .scroll-roller::before, .scroll-roller::after {
+      content: '';
+      position: absolute;
+      top: -4px;
+      width: 18px;
+      height: 26px;
+      background: radial-gradient(circle, #fbbf24 0%, #92400e 75%, #3b1704 100%);
+      border: 2px solid #fef08a;
+      border-radius: 5px;
+    }
+    .scroll-roller::before { left: -10px; }
+    .scroll-roller::after { right: -10px; }
+
+    .parchment-body::-webkit-scrollbar { width: 9px; }
+    .parchment-body::-webkit-scrollbar-track { background: rgba(120, 53, 15, 0.16); border-radius: 8px; }
+    .parchment-body::-webkit-scrollbar-thumb { background: #92400e; border-radius: 8px; border: 2px solid #f6e5c0; }
+
+    @keyframes pulseRing {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); }
+      50% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+    }
+    .pulse-amber { animation: pulseRing 2s infinite; }
+
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+    }
+    .float-slow { animation: floatSlow 2.6s ease-in-out infinite; }
+  </style>
+</head>
+<body class="flex flex-col justify-between relative select-none">
+
+  <!-- =================================================================== -->
+  <!-- TOP HUD BAR: Compact, Pure Game Status + Voice & Music Controls     -->
+  <!-- =================================================================== -->
+  <header class="z-20 bg-[#0d091c]/95 border-b border-amber-500/30 px-2.5 py-1.5 flex items-center justify-between gap-1.5 shrink-0">
+    <!-- Left: Level Indicator & Hearts -->
+    <div class="flex items-center gap-2 min-w-0">
+      <button onclick="openLevelSelectModal()" class="flex items-center gap-1.5 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 rounded-lg px-2 py-1 text-left transition shrink-0" title="Switch Palace Level">
+        <span class="text-base leading-none">👑</span>
+        <div>
+          <div class="text-[9px] uppercase tracking-widest text-amber-300 font-bold leading-none">Levels ▾</div>
+          <div id="hudLevelBadge" class="text-xs font-display font-bold text-white leading-tight">LVL 1 / 5</div>
+        </div>
+      </button>
+      <div class="flex flex-col min-w-0">
+        <div id="hudHearts" class="flex items-center gap-0.5 text-sm leading-none" title="Prince Health (Rewind or Respawn on loss)">
+          ❤️❤️❤️
+        </div>
+        <div id="hudLevelTitle" class="hidden sm:block text-[10px] text-amber-200/80 truncate max-w-[160px]">The Courtyard of Boundaries</div>
+      </div>
+    </div>
+
+    <!-- Center: Sequential Progress Pills (Scroll 1 -> Scroll 2 -> Scroll 3 -> Relic -> Gate Quiz) -->
+    <div id="hudStagePills" class="flex items-center gap-1 overflow-x-auto py-0.5">
+      <!-- Rendered dynamically by JS -->
+    </div>
+
+    <!-- Right: Persistent Music & Voiceover Toggle Buttons (Always ON by default, user can mute) -->
+    <div class="flex items-center gap-1 shrink-0">
+      <button id="btnVoiceToggle" onclick="toggleVoiceover()" class="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border border-emerald-500/50 bg-emerald-950/60 text-emerald-300 transition">
+        <span id="voiceIcon">🗣️</span>
+        <span id="voiceLabel" class="hidden md:inline">Voice: ON</span>
+      </button>
+      <button id="btnMusicToggle" onclick="toggleMusic()" class="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border border-amber-500/50 bg-amber-950/60 text-amber-300 transition">
+        <span id="musicIcon">🎵</span>
+        <span id="musicLabel" class="hidden md:inline">Music: ON</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- =================================================================== -->
+  <!-- SUB-HUD OBJECTIVE & ACTIVE VOICE PERSONA BANNER                     -->
+  <!-- =================================================================== -->
+  <div class="z-20 bg-[#140e29]/95 border-b border-amber-500/20 px-3 py-1 flex items-center justify-between gap-2 text-xs shrink-0">
+    <div class="flex items-center gap-1.5 truncate">
+      <span class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0"></span>
+      <span id="hudObjectiveText" class="text-amber-100 font-medium truncate">
+        Jump the spikes &amp; strike the Shadow Guard to reach Scroll 1!
+      </span>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <span id="hudActiveVoiceBadge" class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded bg-indigo-950/90 border border-indigo-400/30 text-[10px] text-indigo-200 font-semibold">
+        🎙️ Royal Chronicler
+      </span>
+      <span id="hudSandCount" class="text-[11px] font-bold text-amber-300">⏳ 3 Sands</span>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- MAIN FULL-SCREEN INTERACTIVE PRINCE OF PERSIA CANVAS                -->
+  <!-- =================================================================== -->
+  <main class="relative flex-1 w-full overflow-hidden bg-[#070510]">
+    <canvas id="gameCanvas" class="w-full h-full block cursor-pointer"></canvas>
+
+    <!-- Floating Quick-Action Prompt when standing near an unlocked Scroll / Relic / Gatekeeper -->
+    <div id="floatingInteractPrompt" class="hidden absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
+      <button id="btnFloatingInteract" onclick="triggerNearbyInteraction()" class="pulse-amber flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-display font-extrabold text-xs sm:text-sm shadow-2xl border-2 border-white">
+        <span>📜</span>
+        <span id="floatingInteractLabel">UNFURL SCROLL 1</span>
+      </button>
+    </div>
+
+    <!-- Floating Damage / Combat Toast -->
+    <div id="combatToast" class="hidden absolute top-14 left-1/2 -translate-x-1/2 z-20 pointer-events-none px-3.5 py-1.5 rounded-full bg-rose-950/90 border border-rose-400 text-rose-100 text-xs font-bold shadow-lg">
+      ⚔️ Guard struck!
+    </div>
+  </main>
+
+  <!-- =================================================================== -->
+  <!-- BOTTOM DUAL-CONTROL BAR: Both 1-Tap Canvas & Classic Arcade Buttons -->
+  <!-- =================================================================== -->
+  <footer class="z-20 bg-[#0d091c]/95 border-t border-amber-500/30 px-2.5 py-2 shrink-0">
+    <div class="max-w-5xl mx-auto flex items-center justify-between gap-1.5">
+      <!-- Left Movement Controls -->
+      <div class="flex items-center gap-1.5">
+        <button id="btnLeft"
+          class="active:scale-95 select-none px-3.5 py-2.5 sm:px-5 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-amber-500/40 text-amber-200 font-bold text-xs sm:text-sm shadow-md flex items-center gap-1">
+          <span>◀</span> <span class="hidden xs:inline">LEFT</span>
+        </button>
+        <button id="btnRight"
+          class="active:scale-95 select-none px-3.5 py-2.5 sm:px-5 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-amber-500/40 text-amber-200 font-bold text-xs sm:text-sm shadow-md flex items-center gap-1">
+          <span class="hidden xs:inline">RIGHT</span> <span>▶</span>
+        </button>
+      </div>
+
+      <!-- Center: Helpful Control Hint -->
+      <div class="hidden md:flex flex-col items-center text-center px-2">
+        <span class="text-[11px] text-amber-300 font-semibold">
+          🎮 Real Platformer Physics: Jump Spikes, Dodge Pendulum Blades, Trigger Bridge Switch &amp; Strike Guards!
+        </span>
+        <span class="text-[10px] text-slate-400">
+          Use Buttons / Arrow Keys + Space + F, OR Single-Tap on ledges &amp; guards to run, jump &amp; strike
+        </span>
+      </div>
+
+      <!-- Right Action Controls: Jump, Sword Strike, Dagger of Time Rewind -->
+      <div class="flex items-center gap-1.5">
+        <button id="btnStrike" onclick="playerSwordStrike()"
+          class="active:scale-95 select-none px-3 py-2.5 sm:px-4 rounded-xl bg-gradient-to-b from-rose-600 to-rose-800 hover:from-rose-500 hover:to-rose-700 border border-rose-300/60 text-white font-bold text-xs sm:text-sm shadow-md flex items-center gap-1">
+          <span>⚔️</span> <span>STRIKE</span>
+        </button>
+        <button id="btnJump"
+          class="active:scale-95 select-none px-3.5 py-2.5 sm:px-5 rounded-xl bg-gradient-to-b from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 border border-amber-200 text-slate-950 font-extrabold text-xs sm:text-sm shadow-md flex items-center gap-1">
+          <span>▲</span> <span>JUMP</span>
+        </button>
+        <button id="btnRewind" onclick="useDaggerRewind()"
+          class="active:scale-95 select-none px-2.5 py-2.5 sm:px-3.5 rounded-xl bg-cyan-950/90 hover:bg-cyan-900 border border-cyan-400/50 text-cyan-200 font-bold text-xs sm:text-sm shadow-md flex items-center gap-1" title="Rewind Prince to Safe Checkpoint">
+          <span>⏳</span> <span class="hidden sm:inline">REWIND</span>
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- =================================================================== -->
+  <!-- 1. INITIAL TAP-TO-BEGIN OVERLAY (Unlocks Web Audio & Multi-Voice)   -->
+  <!-- =================================================================== -->
+  <div id="startSplashModal" class="fixed inset-0 z-50 bg-[#06040d]/95 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="max-w-lg w-full bg-gradient-to-b from-[#171130] to-[#0b0719] border-2 border-amber-500/60 rounded-2xl p-6 text-center shadow-2xl relative overflow-hidden">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold mb-3">
+        <span>⚔️ PRINCE OF PERSIA STYLE ACTION PLATFORMER</span>
+      </div>
+      <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-200 mb-2">
+        THE SANDS OF DIGNITY
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-300 leading-relaxed mb-4">
+        Conquer <strong class="text-amber-300">5 Persian Palace Levels</strong> filled with pop-up floor spikes, swinging pendulum blades, drawbridge switches, and patrolling Shadow Guards. Unfurl the <strong class="text-amber-300">3 Golden Scrolls</strong>, inspect the <strong class="text-cyan-300">Judicial Case Relic</strong>, and answer the <strong class="text-rose-300">Palace Gatekeeper's 2-Question Boss Quiz</strong> to advance!
+      </p>
+
+      <!-- Feature Highlights Grid -->
+      <div class="grid grid-cols-2 gap-2 text-left mb-5 text-xs">
+        <div class="bg-slate-900/80 border border-amber-500/25 rounded-xl p-2.5">
+          <div class="font-bold text-amber-300 mb-0.5">🏃‍♂️ Real Platforming Skill</div>
+          <div class="text-slate-400 text-[11px]">Jump chasms, time floor spikes, dodge swinging blades &amp; strike Shadow Guards with your sword.</div>
+        </div>
+        <div class="bg-slate-900/80 border border-amber-500/25 rounded-xl p-2.5">
+          <div class="font-bold text-amber-300 mb-0.5">📜 Scroll the Scroll</div>
+          <div class="text-slate-400 text-[11px]">Unfurl full ancient parchment scrolls with complete statutory clauses &amp; workplace examples.</div>
+        </div>
+        <div class="bg-slate-900/80 border border-amber-500/25 rounded-xl p-2.5">
+          <div class="font-bold text-emerald-300 mb-0.5">🎭 Multi-Voice Cast</div>
+          <div class="text-slate-400 text-[11px]">Distinct character voices for Scroll 1, Scroll 2, Scroll 3, the Court Herald &amp; booming Gatekeeper!</div>
+        </div>
+        <div class="bg-slate-900/80 border border-amber-500/25 rounded-xl p-2.5">
+          <div class="font-bold text-rose-300 mb-0.5">⛩️ Gatekeeper Boss Quiz</div>
+          <div class="text-slate-400 text-[11px]">The Gatekeeper guards the exit and asks 2 scenario questions to unseal the next palace level.</div>
+        </div>
+      </div>
+
+      <button onclick="enterPalaceGame()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:brightness-110 text-slate-950 font-display font-extrabold text-base tracking-wide shadow-xl transition transform active:scale-98">
+        ⚔️ ENTER THE PALACE (MUSIC &amp; VOICEOVER ON)
+      </button>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- 2. ANCIENT ROLLED PARCHMENT MODAL (Scrolls 1, 2, 3 & Case Relic)    -->
+  <!-- =================================================================== -->
+  <div id="parchmentModal" class="hidden fixed inset-0 z-40 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5">
+    <div class="max-w-xl w-full flex flex-col items-stretch">
+      <!-- Top Ornate Wooden/Gold Scroll Roller -->
+      <div class="scroll-roller mx-2"></div>
+
+      <!-- Unfurled Scrollable Parchment Body -->
+      <div class="parchment-scroll mx-4 px-5 py-4 flex flex-col max-h-[72dvh]">
+        <!-- Header Bar inside Parchment -->
+        <div class="flex items-start justify-between gap-2 border-b-2 border-amber-900/30 pb-2.5 mb-3 shrink-0">
+          <div>
+            <div class="flex flex-wrap items-center gap-1.5 mb-1">
+              <span id="scrollBadgeType" class="px-2 py-0.5 rounded bg-amber-900 text-amber-100 font-bold text-[10px] uppercase tracking-wider">
+                SCROLL 1 OF 3
+              </span>
+              <span id="scrollVoicePersonaTag" class="px-2 py-0.5 rounded bg-amber-800/20 border border-amber-900/40 text-amber-950 font-semibold text-[10px]">
+                🎙️ Voice: Sage of the Statute
+              </span>
+            </div>
+            <h2 id="scrollTitle" class="font-display text-lg sm:text-xl font-extrabold text-amber-950 leading-snug">
+              Scroll 1: The Statutory Foundation
+            </h2>
+          </div>
+          <button onclick="replayCurrentModalVoice()" class="px-2.5 py-1 rounded-lg bg-amber-900/15 hover:bg-amber-900/25 border border-amber-900/40 text-amber-950 text-xs font-bold shrink-0 flex items-center gap-1" title="Replay Character Voiceover">
+            <span>🔊</span> <span>Replay Voice</span>
+          </button>
+        </div>
+
+        <!-- Scrollable Content Area ("Scroll the Scroll") -->
+        <div id="scrollBodyContent" class="parchment-body overflow-y-auto pr-2 space-y-3 text-xs sm:text-sm leading-relaxed">
+          <!-- Populated dynamically with complete POSH statute / case details -->
+        </div>
+
+        <!-- Scroll Indicator & Collect Footer -->
+        <div class="border-t-2 border-amber-900/30 pt-3 mt-3 flex flex-col sm:flex-row items-center justify-between gap-2 shrink-0">
+          <span class="text-[11px] font-semibold text-amber-900/80">
+            ↕️ Scroll inside the parchment to inspect all statutory clauses
+          </span>
+          <button id="btnCloseParchment" onclick="completeParchmentReading()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 hover:from-amber-800 hover:to-amber-700 text-amber-100 font-display font-bold text-xs sm:text-sm shadow-lg border border-amber-400/50">
+            ✓ SEAL SCROLL &amp; CONTINUE QUEST
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom Ornate Wooden/Gold Scroll Roller -->
+      <div class="scroll-roller mx-2"></div>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- 3. GATEKEEPER 2-QUESTION BOSS QUIZ MODAL                            -->
+  <!-- =================================================================== -->
+  <div id="gatekeeperModal" class="hidden fixed inset-0 z-40 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5">
+    <div class="max-w-xl w-full bg-gradient-to-b from-[#1d1128] via-[#130b1c] to-[#0a0612] border-2 border-rose-500/60 rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col max-h-[86dvh]">
+      <!-- Gatekeeper Boss Header -->
+      <div class="flex items-center justify-between gap-2 border-b border-rose-500/30 pb-3 mb-3 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-11 h-11 rounded-xl bg-rose-950 border border-rose-400/60 flex items-center justify-center text-2xl shadow-inner shrink-0">
+            💂‍♂️
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="px-2 py-0.5 rounded bg-rose-600 text-white font-extrabold text-[10px] uppercase tracking-wider">
+                ⛩️ GATEKEEPER BOSS QUIZ TO PROCEED
+              </span>
+              <span class="px-2 py-0.5 rounded bg-rose-950 border border-rose-400/40 text-rose-200 text-[10px] font-semibold">
+                🎙️ Deep Boss Voice
+              </span>
+            </div>
+            <h2 id="gatekeeperModalTitle" class="font-display text-base sm:text-lg font-extrabold text-white mt-0.5">
+              Answer 2 Questions to Unseal the Palace Gate!
+            </h2>
+          </div>
+        </div>
+        <div id="gatekeeperQuestionCounter" class="px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-400/50 text-amber-300 font-display font-bold text-xs shrink-0">
+          Q 1 / 2
+        </div>
+      </div>
+
+      <!-- Scrollable Question & Choices Body -->
+      <div class="overflow-y-auto pr-1 space-y-3 flex-1">
+        <div class="bg-slate-900/90 border border-rose-400/30 rounded-xl p-3.5">
+          <div class="text-[11px] uppercase tracking-wider text-rose-300 font-bold mb-1">
+            🗣️ The Palace Gatekeeper Booms:
+          </div>
+          <p id="gatekeeperQuestionText" class="text-xs sm:text-sm text-slate-100 font-medium leading-relaxed">
+            Question text goes here...
+          </p>
+        </div>
+
+        <!-- Options List -->
+        <div id="gatekeeperOptionsList" class="space-y-2">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Feedback Box -->
+        <div id="gatekeeperFeedbackBox" class="hidden rounded-xl p-3.5 text-xs sm:text-sm border">
+          <!-- Populated on answer selection -->
+        </div>
+      </div>
+
+      <!-- Footer Button -->
+      <div class="border-t border-slate-800 pt-3 mt-3 flex items-center justify-between gap-2 shrink-0">
+        <button onclick="closeGatekeeperModal()" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+          Retreat to Ledge
+        </button>
+        <button id="btnGatekeeperNext" onclick="advanceGatekeeperQuiz()" class="hidden px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-display font-extrabold text-xs sm:text-sm shadow-lg">
+          NEXT QUESTION ▶
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- 4. LEVEL SELECTOR & VICTORY CERTIFICATE MODAL                       -->
+  <!-- =================================================================== -->
+  <div id="levelSelectModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="max-w-lg w-full bg-[#120c24] border-2 border-amber-500/50 rounded-2xl p-5 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-amber-500/25 pb-3 mb-3">
+        <div>
+          <div class="text-[10px] uppercase tracking-widest text-amber-400 font-bold">5-STAGE CITADEL MAP</div>
+          <h3 class="font-display text-lg font-bold text-white">Select Palace Level</h3>
+        </div>
+        <button onclick="closeLevelSelectModal()" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 text-xs font-bold">✕ Close</button>
+      </div>
+      <div id="levelSelectList" class="space-y-2 max-h-[60dvh] overflow-y-auto pr-1">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <div id="victoryModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="max-w-lg w-full bg-gradient-to-b from-[#1c1338] to-[#0b0718] border-2 border-amber-400 rounded-2xl p-6 text-center shadow-2xl">
+      <div class="text-4xl mb-2">🏆👑📜</div>
+      <div class="inline-block px-3 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/50 text-emerald-300 text-[11px] font-bold mb-2">
+        ALL 5 PALACE LEVELS CONQUERED
+      </div>
+      <h2 class="font-display text-2xl font-extrabold text-amber-300 mb-2">
+        Guardian of the Sands of Dignity
+      </h2>
+      <p class="text-xs sm:text-sm text-slate-300 leading-relaxed mb-4">
+        You have mastered all 15 Scrolls of Law, verified 5 landmark Indian High Court &amp; Supreme Court precedents (including <strong class="text-amber-200">₹1.68 Crore</strong> victim compensation and <strong class="text-rose-300">Section 14</strong> safeguards against malicious complaints), and defeated all 5 Palace Gatekeepers!
+      </p>
+      <div class="bg-slate-900/90 border border-amber-500/30 rounded-xl p-3 text-left text-xs space-y-1 mb-5">
+        <div class="flex justify-between"><span class="text-slate-400">Statute Mastered:</span><span class="text-amber-300 font-bold">POSH Act, 2013 (Sections 2, 3, 4, 9, 14, 19)</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Scrolls Unfurled:</span><span class="text-emerald-300 font-bold">15 / 15 Complete Scrolls</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Judicial Relics Deciphered:</span><span class="text-cyan-300 font-bold">5 / 5 Precedents</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Gatekeeper Boss Trials:</span><span class="text-rose-300 font-bold">10 / 10 Scenarios Passed</span></div>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="restartFromLevel(0)" class="flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-display font-extrabold text-xs sm:text-sm">
+          🔄 PLAY AGAIN FROM LEVEL 1
+        </button>
+        <button onclick="closeVictoryModal()" class="px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs sm:text-sm">
+          Stay in Throne Room
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- COMPLETE GAME ENGINE, 5-LEVEL DATA, OBSTACLES & MULTI-VOICE CAST    -->
+  <!-- =================================================================== -->
+  <script>
+    // =========================================================================
+    // 1. COMPLETE 5-LEVEL POSH COMPLIANCE CURRICULUM & LEVEL GEOMETRY
+    //    Note: All titles use Arabic numerals ("Scroll 1", "Scroll 2", "Scroll 3")
+    //    so TTS never reads Roman numeral "I" as "eye".
+    // =========================================================================
+    const LEVELS = [
+      {
+        levelNumber: 1,
+        name: "The Courtyard of Boundaries",
+        subtitle: "Scope of the Act, 'Aggrieved Woman' & Quid Pro Quo vs. Hostile Environment",
+        skyTop: "#090516",
+        skyBottom: "#1d1138",
+        scrolls: [
+          {
+            id: "s1",
+            number: 1,
+            voiceRole: "scroll1",
+            voiceLabel: "Sage of the Statute (Deep Scholar Voice)",
+            title: "Scroll 1: Who is Protected Under the POSH Act, 2013?",
+            spokenScript: "Scroll One. The Statutory Foundation. Under Section 2, clause A of the Prevention of Sexual Harassment Act 2013, protection extends to every woman at the workplace, regardless of employment status or age. Whether she is a permanent employee, freelancer, intern, vendor, client, or a visitor stepping into the premises, the law shields her dignity.",
+            sections: [
+              {
+                heading: "1. Statutory Scope — Section 2(a): 'Aggrieved Woman'",
+                body: "The Act protects every woman working at or visiting a workplace—whether employed regularly, temporarily, on ad-hoc or daily wage basis, either directly or through an agent/contractor, with or without remuneration, including interns, trainees, volunteers, and visiting clients or job applicants."
+              },
+              {
+                heading: "2. Gender-Neutral Internal Policies vs. Statutory Minimum",
+                body: "While the statutory baseline under the 2013 Act explicitly covers women as 'aggrieved women', organizations can—and frequently do—extend gender-neutral protection through their internal Service Rules so every employee is protected against harassment."
+              },
+              {
+                heading: "3. Real Workplace Application",
+                bullets: [
+                  "✓ COVERED: A 21-year-old summer intern or an external audit consultant harassed by a staff member inside the office.",
+                  "✓ COVERED: A domestic worker or housekeeping staff member employed via a third-party agency.",
+                  "✕ MYTH DEBUNKED: 'She is on a 3-month freelance contract, so POSH doesn't apply.' False—contractual status never removes protection."
+                ]
+              }
+            ]
+          },
+          {
+            id: "s2",
+            number: 2,
+            voiceRole: "scroll2",
+            voiceLabel: "Vizier of Ethics (Crisp Counselor Voice)",
+            title: "Scroll 2: Defining Sexual Harassment (Section 2(n))",
+            spokenScript: "Scroll Two. Defining Unwelcome Acts under Section 2, clause N. Sexual harassment includes any one or more unwelcome acts or behavior, whether directly or by implication: physical contact and advances, a demand or request for sexual favors, making sexually colored remarks, showing pornography, or any other unwelcome physical, verbal, or non-verbal conduct of a sexual nature.",
+            sections: [
+              {
+                heading: "1. The 5 Statutory Pillars of Section 2(n)",
+                bullets: [
+                  "Physical contact and advances that are unwelcome.",
+                  "A demand or request for sexual favors.",
+                  "Making sexually colored remarks, jokes, or innuendos.",
+                  "Showing pornography or sexually explicit digital content.",
+                  "Any other unwelcome physical, verbal, or non-verbal conduct of a sexual nature (staring, leering, gesturing, or stalking)."
+                ]
+              },
+              {
+                heading: "2. Why 'Unwelcome' is the Decisive Test",
+                body: "An act does not require repeated physical assault to violate the law. If the recipient indicates—by words, silence, stepping back, or discomfort—that the behavior is unwelcome, continuing or imposing that conduct crosses the statutory threshold."
+              },
+              {
+                heading: "3. Safe Conduct vs. Violation",
+                bullets: [
+                  "✓ SAFE: Complimenting a colleague's analytical presentation during a project review.",
+                  "✕ VIOLATION: Commenting repeatedly on a colleague's figure, attire, or sending late-night suggestive emojis on WhatsApp."
+                ]
+              }
+            ]
+          },
+          {
+            id: "s3",
+            number: 3,
+            voiceRole: "scroll3",
+            voiceLabel: "Guardian of Boundaries (Warm Mentor Voice)",
+            title: "Scroll 3: Quid Pro Quo & Hostile Work Environment (Section 3(2))",
+            spokenScript: "Scroll Three. Section 3, sub-section 2 explains how power and environment turn conduct into unlawful harassment. Quid Pro Quo means this for that, such as linking a promotion or appraisal to personal favors. Hostile Work Environment occurs when intimidating, humiliating, or offensive conduct interferes with work performance.",
+            sections: [
+              {
+                heading: "1. Quid Pro Quo ('This for That') — Section 3(2)(i) & (ii)",
+                body: "Implied or explicit promise of preferential treatment in employment, OR implied or explicit threat of detrimental treatment (blocking promotion, termination, poor appraisal) linked to sexual compliance."
+              },
+              {
+                heading: "2. Hostile Work Environment — Section 3(2)(iii)–(v)",
+                body: "Interference with work or creating an intimidating, offensive, or hostile work environment, or humiliating treatment likely to affect a woman's health, safety, or career growth."
+              },
+              {
+                heading: "3. Crucial Checklist for Teams",
+                bullets: [
+                  "✓ SAFE: Objective, documented performance feedback delivered during work hours.",
+                  "✕ VIOLATION: 'Join me for drinks alone at my hotel tonight so we can finalize your promotion letter.'"
+                ]
+              }
+            ]
+          }
+        ],
+        relic: {
+          title: "Case Relic 1: Apparel Export Promotion Council v. A.K. Chopra (1999)",
+          citation: "Supreme Court of India | AIR 1999 SC 625",
+          url: "https://indiankanoon.org/doc/1829914/",
+          voiceRole: "relic",
+          voiceLabel: "High Court Herald (Solemn Judicial Voice)",
+          spokenScript: "Judicial Case Relic One. Apparel Export Promotion Council versus A. K. Chopra, decided by the Supreme Court of India in 1999. A senior officer repeatedly tried to sit too close and touch his subordinate clerk inside a hotel elevator despite her objections. The High Court wrongly pardoned him because no actual physical molestation succeeded. The Supreme Court reversed the High Court and upheld his dismissal, ruling that any unwelcome physical advance or proximity that violates a woman's dignity is sexual harassment, even without completed physical contact.",
+          summary: "A senior officer repeatedly pressured a subordinate woman clerk and attempted physical proximity inside an elevator despite her protests. The Supreme Court held that actual physical contact is NOT mandatory to establish sexual harassment—any unwelcome advance that outrages workplace dignity violates fundamental rights under Articles 14, 15, and 21."
+        },
+        gatekeeperQuiz: [
+          {
+            question: "Question 1 of 2: A senior manager tells a contractual graphic designer, 'If you accompany me on a weekend trip, I will make sure your contract is converted to a full-time role.' Which provision of the POSH Act does this violate?",
+            spokenQuestion: "Gatekeeper Trial, Question One of Two. A senior manager tells a contractual graphic designer: If you accompany me on a weekend trip, I will make sure your contract is converted to a full-time role. Which provision of the Posh Act does this violate?",
+            options: [
+              { text: "It is not covered because contractual designers are not permanent employees.", correct: false, feedback: "Incorrect! Section 2(a) protects all women at the workplace including contractual, freelance, and agency workers." },
+              { text: "It violates Section 3(2) as 'Quid Pro Quo' harassment (implied/explicit promise of preferential treatment).", correct: true, feedback: "Correct! Linking career advancement or contract renewal to personal/sexual favors is classic Quid Pro Quo under Section 3(2)." },
+              { text: "It is only a violation if physical contact actually happens on the trip.", correct: false, feedback: "Incorrect! As held in A.K. Chopra (1999), the unwelcome demand or advance itself completes the violation." }
+            ]
+          },
+          {
+            question: "Question 2 of 2: Based on the Supreme Court ruling in Apparel Export Promotion Council v. A.K. Chopra (1999), is actual physical touching required to prove workplace sexual harassment?",
+            spokenQuestion: "Gatekeeper Trial, Question Two of Two. Based on the Supreme Court ruling in Apparel Export Promotion Council versus A. K. Chopra, is actual physical touching required to prove workplace sexual harassment?",
+            options: [
+              { text: "No — any unwelcome advance, proximity, or verbal/non-verbal conduct of a sexual nature suffices.", correct: true, feedback: "Correct! The Supreme Court ruled that physical contact is not a prerequisite; unwelcome advances violating dignity are sufficient." },
+              { text: "Yes — without CCTV proof of physical touch, no complaint can stand.", correct: false, feedback: "Incorrect! Verbal, non-verbal, digital, and attempted advances are fully actionable." },
+              { text: "Only if at least three witnesses sign an affidavit.", correct: false, feedback: "Incorrect! There is no three-witness rule under the POSH Act." }
+            ]
+          }
+        ]
+      },
+      {
+        levelNumber: 2,
+        name: "The Hall of Echoes & Extended Workplaces",
+        subtitle: "Impact vs. Intent, Digital/Remote Workplaces & Section 2(o) Extended Premises",
+        skyTop: "#07121e",
+        skyBottom: "#142a42",
+        scrolls: [
+          {
+            id: "s1",
+            number: 1,
+            voiceRole: "scroll1",
+            voiceLabel: "Sage of the Statute (Deep Scholar Voice)",
+            title: "Scroll 1: Impact Over Intent — The Recipient's Perspective",
+            spokenScript: "Scroll One. Impact Over Intent. In workplace harassment inquiries, claiming I was only joking or I meant it as a friendly compliment is not a legal defense. The law evaluates the impact of the conduct on a reasonable woman in the recipient's shoes, not the self-proclaimed benign intent of the speaker.",
+            sections: [
+              {
+                heading: "1. Why 'Just a Joke' Fails as a Defense",
+                body: "Harassment often hides behind 'banter' or 'locker-room humor'. Under POSH jurisprudence, once conduct is sexually colored or demeaning, its unwelcome impact on the recipient outweighs the perpetrator's claim of harmless intent."
+              },
+              {
+                heading: "2. Power Asymmetry & Silent Discomfort",
+                body: "Subordinates often smile awkwardly or stay silent when a powerful manager makes an inappropriate remark because they fear retaliation. Silence or polite deflection never equals consent."
+              },
+              {
+                heading: "3. Practical Workplace Standard",
+                bullets: [
+                  "✓ SAFE: Immediately apologizing and stopping if a colleague looks uncomfortable.",
+                  "✕ VIOLATION: Saying 'Don't be so sensitive, everyone in our team enjoys spicy jokes!'"
+                ]
+              }
+            ]
+          },
+          {
+            id: "s2",
+            number: 2,
+            voiceRole: "scroll2",
+            voiceLabel: "Vizier of Ethics (Crisp Counselor Voice)",
+            title: "Scroll 2: Section 2(o) — The 'Extended Workplace' Doctrine",
+            spokenScript: "Scroll Two. Section 2, clause O defines the Extended Workplace. A workplace is not restricted to your four office walls. It includes any place visited by the employee arising out of or during the course of employment, including client sites, offsites, conferences, and employer-provided transport.",
+            sections: [
+              {
+                heading: "1. Statutory Definition — Section 2(o)",
+                body: "Under Section 2(o)(v), the 'workplace' explicitly encompasses any place visited by an employee arising out of or during the course of employment, including transportation provided by the employer for undertaking such journey."
+              },
+              {
+                heading: "2. Where Does POSH Apply Outside the Office?",
+                bullets: [
+                  "✓ Company-sponsored offsite retreats, award dinners, and hotel stays during business travel.",
+                  "✓ Office cabs, shuttle buses, and flights booked for official travel.",
+                  "✓ Client offices, vendor factories, and field-visit locations."
+                ]
+              }
+            ]
+          },
+          {
+            id: "s3",
+            number: 3,
+            voiceRole: "scroll3",
+            voiceLabel: "Guardian of Boundaries (Warm Mentor Voice)",
+            title: "Scroll 3: Digital, Hybrid & Work-From-Home Boundaries",
+            spokenScript: "Scroll Three. Virtual and Hybrid Workplaces. When employees work remotely or collaborate on Slack, Microsoft Teams, Zoom, or WhatsApp, the digital channel is an extension of the workplace. Unwelcome late-night video calls, inappropriate memes, or comments on bedroom attire during video calls violate the POSH Act.",
+            sections: [
+              {
+                heading: "1. Virtual Channels Are Official Workspaces",
+                body: "Courts treat WhatsApp work groups, Zoom meetings, email threads, and direct messages between colleagues as part of the extended workplace whenever the interaction stems from the employment relationship."
+              },
+              {
+                heading: "2. Digital Red Lines",
+                bullets: [
+                  "✓ SAFE: Scheduling video calls during standard working hours with a clear agenda.",
+                  "✕ VIOLATION: Insisting a subordinate turn on her webcam at 11:30 PM or sending personal voice notes commenting on her appearance."
+                ]
+              }
+            ]
+          }
+        ],
+        relic: {
+          title: "Case Relic 2: Saurabh Kumar Mallick v. Comptroller & Auditor General (2008)",
+          citation: "Delhi High Court | WP(C) No. 8649/2007",
+          url: "https://indiankanoon.org/doc/1245655/",
+          voiceRole: "relic",
+          voiceLabel: "High Court Herald (Solemn Judicial Voice)",
+          spokenScript: "Judicial Case Relic Two. Saurabh Kumar Mallick versus Comptroller and Auditor General of India, decided by the Delhi High Court in 2008. An officer harassed his senior woman colleague inside an official mess residence after duty hours and claimed it was outside the workplace. The Delhi High Court rejected his defense and formulated the Nexus and Proximity test: any location that has direct proximity to employment or official stay counts as an extended workplace.",
+          summary: "An officer accused of harassing a woman senior inside an official mess residence argued that a residential mess was not a 'workplace'. The Delhi High Court rejected a narrow reading and held that any location bearing proximity and nexus to official duty—including official accommodation, offsites, and virtual workspaces—is part of the extended workplace."
+        },
+        gatekeeperQuiz: [
+          {
+            question: "Question 1 of 2: During a company-paid annual dealer conference at a resort in Goa, a team lead corners an analyst by the pool at 10 PM and makes sexually suggestive remarks. He claims POSH does not apply after 6 PM or outside the Mumbai office. Is he right?",
+            spokenQuestion: "Gatekeeper Trial, Question One of Two. During a company-paid conference at a resort in Goa, a team lead makes sexually suggestive remarks at 10 PM and claims the Posh Act does not apply outside the Mumbai office. Is he right?",
+            options: [
+              { text: "No — under Section 2(o) and Saurabh Kumar Mallick (2008), company offsites and official travel are part of the Extended Workplace.", correct: true, feedback: "Correct! Section 2(o) covers any place visited arising out of or during the course of employment." },
+              { text: "Yes — POSH jurisdiction ends at 6:00 PM sharp.", correct: false, feedback: "Incorrect! Time of day does not immunize harassment during an official offsite or work-linked interaction." },
+              { text: "Yes — resorts are governed only by tourism laws, not workplace laws.", correct: false, feedback: "Incorrect! The employment nexus brings the company retreat squarely under Section 2(o)." }
+            ]
+          },
+          {
+            question: "Question 2 of 2: A colleague repeatedly posts suggestive memes in a project WhatsApp group and says, 'Relax, my intention was just to lighten the mood!' How does the Internal Committee evaluate this?",
+            spokenQuestion: "Gatekeeper Trial, Question Two of Two. A colleague repeatedly posts suggestive memes in a project WhatsApp group and says his intention was just to lighten the mood. How does the Internal Committee evaluate this?",
+            options: [
+              { text: "If he swears his intent was humorous, the complaint must be dismissed.", correct: false, feedback: "Incorrect! Good or humorous intent does not excuse unwelcome sexually colored conduct." },
+              { text: "Impact overrides intent — unwelcome sexually colored digital conduct creates a hostile work environment.", correct: true, feedback: "Correct! Both the 'Impact over Intent' standard and digital extended workplace rules apply." },
+              { text: "WhatsApp is a personal app, so the IC cannot review screenshots.", correct: false, feedback: "Incorrect! Digital messages among colleagues serve as primary documentary evidence before the IC." }
+            ]
+          }
+        ]
+      },
+      {
+        levelNumber: 3,
+        name: "The Chamber of the Internal Committee",
+        subtitle: "Section 4 IC Composition, External Member Mandate & 90-Day Inquiry Timelines",
+        skyTop: "#0e1712",
+        skyBottom: "#173326",
+        scrolls: [
+          {
+            id: "s1",
+            number: 1,
+            voiceRole: "scroll1",
+            voiceLabel: "Sage of the Statute (Deep Scholar Voice)",
+            title: "Scroll 1: Mandatory Constitution of the IC (Section 4)",
+            spokenScript: "Scroll One. Mandatory Constitution of the Internal Committee under Section 4. Every workplace employing ten or more workers must constitute an Internal Committee by a formal written order. Failing to constitute an Internal Committee invites a fine of up to fifty thousand rupees under Section 26, and repeat violations can lead to double penalties or cancellation of business licenses.",
+            sections: [
+              {
+                heading: "1. The 4 Statutory Rules of IC Composition (Section 4)",
+                bullets: [
+                  "Presiding Officer: Must be a woman employed at a senior level at the workplace.",
+                  "Internal Members: At least 2 employees committed to the cause of women or having legal/social work experience.",
+                  "External Member: At least 1 external member from an NGO or association committed to women's rights or familiar with POSH law.",
+                  "50% Women Quota: At least ONE-HALF of the total members of the IC MUST be women."
+                ]
+              },
+              {
+                heading: "2. What Happens if the Respondent is Senior to the Presiding Officer?",
+                body: "To prevent conflict of interest or intimidation, the IC charter must replace any member who is subordinate to or directly reports to the Respondent."
+              }
+            ]
+          },
+          {
+            id: "s2",
+            number: 2,
+            voiceRole: "scroll2",
+            voiceLabel: "Vizier of Ethics (Crisp Counselor Voice)",
+            title: "Scroll 2: Filing Timelines (3 + 3 Months) & Conciliation (Section 9 & 10)",
+            spokenScript: "Scroll Two. Filing Timelines and Conciliation under Sections 9 and 10. An aggrieved woman should file a written complaint within three months of the incident, or within three months of the last incident in a series. The Internal Committee can extend this timeline by another three months for recorded reasons. Under Section 10, conciliation is allowed only if requested by the aggrieved woman, and never involves a monetary settlement.",
+            sections: [
+              {
+                heading: "1. Section 9 — The 3 + 3 Month Filing Window",
+                body: "A complaint must be filed within 3 months from the date of the incident (or last incident in a series). If the woman was prevented from filing due to trauma, illness, or fear, the IC may extend the limit by an additional 3 months (up to 6 months total)."
+              },
+              {
+                heading: "2. Section 10 — Strict Rules on Conciliation",
+                bullets: [
+                  "✓ Conciliation can ONLY be initiated at the written request of the aggrieved woman—never forced by HR or management.",
+                  "✕ NO MONETARY SETTLEMENT: Section 10(1) strictly prohibits financial pay-offs as a conciliation settlement."
+                ]
+              }
+            ]
+          },
+          {
+            id: "s3",
+            number: 3,
+            voiceRole: "scroll3",
+            voiceLabel: "Guardian of Boundaries (Warm Mentor Voice)",
+            title: "Scroll 3: Interim Relief, 90-Day Inquiry & 10-Day Report (Sections 11–13)",
+            spokenScript: "Scroll Three. Interim Relief and Inquiry Deadlines. During an inquiry, under Section 12, the Internal Committee can recommend transferring either party, granting up to three months of special leave to the complainant, or restraining the respondent from writing her performance appraisal. The inquiry must finish within ninety days, and the final report must be submitted within ten days.",
+            sections: [
+              {
+                heading: "1. Section 12 — Interim Relief to Prevent Retaliation",
+                bullets: [
+                  "Transfer the aggrieved woman or the respondent to another team/location.",
+                  "Grant leave to the aggrieved woman up to 3 months (in addition to her statutory leave).",
+                  "Restrain the respondent from reporting on the work performance or writing the confidential appraisal of the aggrieved woman."
+                ]
+              },
+              {
+                heading: "2. Statutory Clock: 90 Days + 10 Days + 60 Days",
+                body: "The IC must complete its inquiry within 90 days (Section 11(4)), issue its report within 10 days of completion (Section 13(1)), and the Employer must act on the recommendations within 60 days (Section 13(4))."
+              }
+            ]
+          }
+        ],
+        relic: {
+          title: "Case Relic 3: Dr. Punita K. Sodhi v. Union of India (2010)",
+          citation: "Delhi High Court | W.P.(C) 367/2009",
+          url: "https://indiankanoon.org/doc/147297170/",
+          voiceRole: "relic",
+          voiceLabel: "High Court Herald (Solemn Judicial Voice)",
+          spokenScript: "Judicial Case Relic Three. Doctor Punita K. Sodhi versus Union of India, decided by the Delhi High Court in 2010. An ophthalmologist complained of ongoing harassment by the head of department. The court ruled that an inquiry committee where members are subordinate to the accused boss violates natural justice, and further established that when harassment consists of a continuing series of hostile acts, the limitation period runs from the latest act in the series.",
+          summary: "The Delhi High Court held that: (1) Inquiry committee members must not be subordinate in rank to the accused officer, ensuring fearless impartiality; and (2) Hostile work environment harassment is often a 'continuing wrong', so limitation runs from the most recent hostile act."
+        },
+        gatekeeperQuiz: [
+          {
+            question: "Question 1 of 2: A 45-employee tech company sets up an Internal Committee with 3 male managers and 1 female junior executive, and no external NGO/legal expert. Is this IC legally valid under Section 4?",
+            spokenQuestion: "Gatekeeper Trial, Question One of Two. A 45-employee company sets up an Internal Committee with three male managers and one female junior executive, and no external expert. Is this committee legally valid under Section 4?",
+            options: [
+              { text: "No — it fails three mandates: at least 50% must be women, the Presiding Officer must be a senior woman, and 1 External Member is mandatory.", correct: true, feedback: "Correct! An improperly constituted IC makes any inquiry legally defective and exposes the company to Section 26 penalties." },
+              { text: "Yes — any 4 employees chosen by the CEO form a valid committee.", correct: false, feedback: "Incorrect! Section 4 strictly mandates a senior woman Presiding Officer, >=50% women, and an independent External Member." },
+              { text: "External members are only needed if the company has over 5,000 employees.", correct: false, feedback: "Incorrect! Every workplace with 10 or more employees must include an External Member on its IC." }
+            ]
+          },
+          {
+            question: "Question 2 of 2: Under Section 10 of the POSH Act, when is conciliation permissible, and can HR offer ₹2,00,000 to the complainant to drop the complaint?",
+            spokenQuestion: "Gatekeeper Trial, Question Two of Two. Under Section 10 of the Posh Act, when is conciliation permissible, and can H.R. offer two lakh rupees to the complainant to drop the complaint?",
+            options: [
+              { text: "Conciliation is allowed ONLY at the written request of the aggrieved woman, and monetary settlement is strictly prohibited.", correct: true, feedback: "Correct! Section 10(1) explicitly states that conciliation can only happen if requested by the aggrieved woman and never on the basis of a monetary settlement." },
+              { text: "HR can mandate conciliation first in all cases and pay cash settlements to avoid litigation.", correct: false, feedback: "Incorrect! Forced conciliation and monetary settlements are explicitly barred by Section 10(1)." },
+              { text: "Conciliation is never allowed under the POSH Act.", correct: false, feedback: "Incorrect! Non-monetary conciliation is permitted if voluntarily requested by the aggrieved woman." }
+            ]
+          }
+        ]
+      },
+      {
+        levelNumber: 4,
+        name: "The Scales of Truth & Safeguards",
+        subtitle: "Victim Compensation (Sec 15) vs. Penalties for Malicious Complaints (Sec 14)",
+        skyTop: "#1b0d1e",
+        skyBottom: "#361838",
+        scrolls: [
+          {
+            id: "s1",
+            number: 1,
+            voiceRole: "scroll1",
+            voiceLabel: "Sage of the Statute (Deep Scholar Voice)",
+            title: "Scroll 1: Section 15 — How Victim Compensation is Calculated",
+            spokenScript: "Scroll One. Victim Compensation under Section 15. When harassment is proven, the Internal Committee can deduct compensation directly from the respondent's salary or direct the employer to pay damages. Under Section 15, compensation is determined by five factors: mental trauma and distress, loss in career opportunity, medical expenses for physical or psychiatric treatment, the income and financial status of the respondent, and the feasibility of lump-sum or installment payment.",
+            sections: [
+              {
+                heading: "1. The 5 Statutory Factors Under Section 15",
+                bullets: [
+                  "Mental trauma, pain, suffering, and emotional distress caused to the aggrieved woman.",
+                  "Loss in career opportunity due to the incident of sexual harassment.",
+                  "Medical expenses incurred by the victim for physical or psychiatric treatment.",
+                  "The income and financial status of the respondent.",
+                  "Feasibility of paying the sum in lump sum or in installments."
+                ]
+              },
+              {
+                heading: "2. High Court Precedent on Massive Damages",
+                body: "In Ms. G v. ISG Novasoft Technologies Ltd. (Madras High Court), the court awarded ₹1.68 Crore in damages to an aggrieved woman whose complaint was mishandled, demonstrating the severe financial liability of non-compliance."
+              }
+            ]
+          },
+          {
+            id: "s2",
+            number: 2,
+            voiceRole: "scroll2",
+            voiceLabel: "Vizier of Ethics (Crisp Counselor Voice)",
+            title: "Scroll 2: Section 14 — Penalties for Proven Malicious Complaints",
+            spokenScript: "Scroll Two. Section 14 Safeguards Against False or Malicious Complaints. The Posh Act is a shield for dignity, never a weapon for vendetta. Under Section 14, if the Internal Committee concludes that an allegation is malicious, made knowing it to be false, or supported by forged or misleading documents, it can recommend disciplinary action, fine, or termination against the false complainant.",
+            sections: [
+              {
+                heading: "1. Section 14(1) & (2) — Punishing Proven Malice & Forged Evidence",
+                body: "Where the IC arrives at a conclusion that the allegation against the respondent is malicious, OR the complainant produced any forged or misleading document, it may recommend action against the complainant in accordance with service rules (including warning, deduction from wages, or termination)."
+              },
+              {
+                heading: "2. Crucial Statutory Proviso: Unproven ≠ Malicious!",
+                body: "The First Proviso to Section 14(1) is vital: 'Mere inability to substantiate a complaint or provide adequate proof need NOT attract action against the complainant.' Action under Section 14 requires affirmative proof of malice or fabrication."
+              }
+            ]
+          },
+          {
+            id: "s3",
+            number: 3,
+            voiceRole: "scroll3",
+            voiceLabel: "Guardian of Boundaries (Warm Mentor Voice)",
+            title: "Scroll 3: Preponderance of Probabilities & Natural Justice",
+            spokenScript: "Scroll Three. Standard of Proof and Natural Justice. Internal Committee inquiries are civil disciplinary inquiries, not criminal trials. Therefore, the standard of proof is Preponderance of Probabilities, meaning more likely true than not, rather than the criminal standard of beyond reasonable doubt. Both parties have the right to receive copies of statements, cross-examine witnesses, and be heard fairly.",
+            sections: [
+              {
+                heading: "1. 'Preponderance of Probabilities' vs. 'Beyond Reasonable Doubt'",
+                body: "Because harassment often occurs behind closed doors without eyewitnesses, the IC weighs circumstantial evidence, contemporaneous messages, behavioral patterns, and credibility to decide what is more probable."
+              },
+              {
+                heading: "2. Mandatory Principles of Natural Justice",
+                bullets: [
+                  "Both Complainant and Respondent must receive complete copies of the complaint/reply and witness statements.",
+                  "Both sides must be given a fair opportunity to cross-examine witnesses (often via written questions through the IC to prevent intimidation).",
+                  "Rule 7(6) of the POSH Rules prohibits legal practitioners (lawyers) from representing parties inside IC hearings."
+                ]
+              }
+            ]
+          }
+        ],
+        relic: {
+          title: "Case Relic 4: Ms. G v. ISG Novasoft (₹1.68 Cr Award) & Anita Suresh v. UOI (2019)",
+          citation: "Madras High Court (O.P. No. 463 of 2012) & Delhi High Court (W.P.(C) 5114/2015)",
+          url: "https://poshatwork.com/delhi-high-court-imposes-a-rs-50000-fine-for-filing-a-false-sexual-harassment-complaint/",
+          voiceRole: "relic",
+          voiceLabel: "High Court Herald (Solemn Judicial Voice)",
+          spokenScript: "Judicial Case Relic Four. Balancing the Scales of Justice. First, in Ms. G versus I S G Novasoft Technologies, the Madras High Court awarded one point six eight Crore rupees in compensation to a senior woman executive after her employer failed to constitute a committee and forced her out. Second, in Anita Suresh versus Union of India in 2019, the Delhi High Court imposed a fifty thousand rupee fine on a complainant who filed a fabricated sexual harassment complaint to settle personal scores after being questioned about her work performance, holding that the Posh Act must never be misused.",
+          summary: "Two landmark rulings illustrate the balanced sword and shield of Indian POSH jurisprudence: (1) In Ms. G v. ISG Novasoft, the Madras High Court awarded ₹1.68 Crore to a victim whose complaint was suppressed; and (2) In Anita Suresh v. Union of India (2019), the Delhi High Court fined the complainant ₹50,000 under the spirit of Section 14 after proving she fabricated a complaint with no details solely to retaliate against a supervisor."
+        },
+        gatekeeperQuiz: [
+          {
+            question: "Question 1 of 2: Ajunior analyst files a genuine complaint about a verbal remark made in an empty corridor, but because there were no CCTV cameras or witnesses, the IC finds the evidence insufficient to prove the charge. Should the analyst be punished under Section 14?",
+            spokenQuestion: "Gatekeeper Trial, Question One of Two. A junior analyst files a genuine complaint about a verbal remark made in an empty corridor, but because there were no witnesses, the committee finds the evidence insufficient. Should the analyst be punished under Section 14?",
+            options: [
+              { text: "No — the First Proviso to Section 14(1) states that mere inability to substantiate a complaint does NOT attract punishment unless malice or forgery is proven.", correct: true, feedback: "Correct! Section 14 only punishes affirmatively proven malice or forged evidence (as in Anita Suresh v. UOI), never an honest complaint that lacked witnesses." },
+              { text: "Yes — any complaint that isn't proven automatically triggers a ₹50,000 fine.", correct: false, feedback: "Incorrect! Penalizing unsubstantiated good-faith complaints would chill reporting and violates the statutory proviso to Section 14(1)." },
+              { text: "Yes — she must be terminated immediately.", correct: false, feedback: "Incorrect! Only proven malicious intent or forged documents trigger Section 14 action." }
+            ]
+          },
+          {
+            question: "Question 2 of 2: What did the Madras High Court award in Ms. G v. ISG Novasoft Technologies Ltd., and what did the Delhi High Court order in Anita Suresh v. Union of India (2019)?",
+            spokenQuestion: "Gatekeeper Trial, Question Two of Two. What did the Madras High Court award in Ms. G versus I S G Novasoft, and what did the Delhi High Court order in Anita Suresh versus Union of India?",
+            options: [
+              { text: "₹1.68 Crore compensation to the victim in ISG Novasoft; and a ₹50,000 fine against a proven malicious complainant in Anita Suresh.", correct: true, feedback: "Correct! Together, these two rulings show how Indian courts fiercely protect genuine victims while penalizing proven abuse of the law." },
+              { text: "Both cases resulted in criminal imprisonment of 10 years.", correct: false, feedback: "Incorrect! These were landmark civil/writ rulings awarding ₹1.68 Crore in victim damages and a ₹50,000 penalty for malicious filing." },
+              { text: "Both complaints were settled via private cash conciliations.", correct: false, feedback: "Incorrect! Monetary conciliation is barred under Section 10; these were judicial orders." }
+            ]
+          }
+        ]
+      },
+      {
+        levelNumber: 5,
+        name: "The Throne Room of Culture & Confidentiality",
+        subtitle: "Section 16 Strict Confidentiality, Section 19 Employer Duties & Active Bystander Leadership",
+        skyTop: "#1a1005",
+        skyBottom: "#38210a",
+        scrolls: [
+          {
+            id: "s1",
+            number: 1,
+            voiceRole: "scroll1",
+            voiceLabel: "Sage of the Statute (Deep Scholar Voice)",
+            title: "Scroll 1: Section 16 & 17 — Ironclad Confidentiality & Media Ban",
+            spokenScript: "Scroll One. Ironclad Confidentiality under Sections 16 and 17. Notwithstanding anything in the Right to Information Act 2005, the identity and addresses of the aggrieved woman, respondent, and witnesses, as well as inquiry proceedings and recommendations, must never be published, communicated, or made known to the public, press, or media. Breaching confidentiality invites a penalty of five thousand rupees under the Rules plus disciplinary action.",
+            sections: [
+              {
+                heading: "1. What Must Remain Strictly Confidential (Section 16)",
+                bullets: [
+                  "Name, address, or any detail leading to the identification of the aggrieved woman, respondent, or witnesses.",
+                  "Contents of the complaint, inquiry testimonies, and conciliation/IC proceedings.",
+                  "Recommendations of the IC and the action taken by the employer."
+                ]
+              },
+              {
+                heading: "2. Narrow Statutory Exception (Proviso to Section 16)",
+                body: "Information may be disseminated regarding the justice secured to any victim of sexual harassment WITHOUT disclosing the name, address, identity, or any identifying particulars of the aggrieved woman or witnesses."
+              }
+            ]
+          },
+          {
+            id: "s2",
+            number: 2,
+            voiceRole: "scroll2",
+            voiceLabel: "Vizier of Ethics (Crisp Counselor Voice)",
+            title: "Scroll 2: Section 19 & 21 — Employer Duties & Annual District Officer Report",
+            spokenScript: "Scroll Two. Employer Duties and Annual Reporting under Sections 19, 21, and 26. Every employer must display the penal consequences of harassment and the Internal Committee contact details conspicuously at the workplace, organize regular sensitization workshops, assist the complainant if she chooses to file a police complaint under the Bharatiya Nyaya Sanhita, and file an Annual Report with the District Officer and in the Board of Directors' Report.",
+            sections: [
+              {
+                heading: "1. Key Employer Obligations Under Section 19",
+                bullets: [
+                  "Display IC member names, contact emails, and penal consequences prominently across offices and intranets.",
+                  "Conduct regular employee awareness workshops and specialized IC member capacity-building training.",
+                  "Treat sexual harassment as misconduct under the service rules and initiate action within 60 days of the IC report."
+                ]
+              },
+              {
+                heading: "2. Section 21 & Companies Act Disclosure",
+                body: "The IC must submit an annual report to the Employer and the District Officer detailing: number of complaints received, disposed of, pending for more than 90 days, workshops conducted, and nature of action taken."
+              }
+            ]
+          },
+          {
+            id: "s3",
+            number: 3,
+            voiceRole: "scroll3",
+            voiceLabel: "Guardian of Boundaries (Warm Mentor Voice)",
+            title: "Scroll 3: Zero Retaliation & The Active Bystander's 4Ds",
+            spokenScript: "Scroll Three. Zero Retaliation and Active Bystander Leadership. Retaliating against a complainant or witness through hostile transfers, exclusion from meetings, or downgraded appraisals is a severe violation. Bystanders can protect workplace dignity using the Four Ds: Direct intervention, Distraction, Delegation to H.R. or the Internal Committee, and Documentation.",
+            sections: [
+              {
+                heading: "1. Strict Prohibition Against Retaliation",
+                body: "Any adverse action against a complainant or witness—whether overt (demotion) or subtle (ostracism, removing from key accounts)—is strictly prohibited and triggers independent disciplinary sanctions."
+              },
+              {
+                heading: "2. The Active Bystander '4D' Framework",
+                bullets: [
+                  "DIRECT: Calmly call out inappropriate behavior in the moment ('That comment isn't okay here').",
+                  "DISTRACT: Interrupt the situation ('Hey Priya, we need you in Conference Room B right now').",
+                  "DELEGATE: Escalate or help the affected colleague connect with the IC or HR.",
+                  "DOCUMENT: Keep contemporaneous notes (date, time, exact words) and agree to serve as a truthful witness before the IC."
+                ]
+              }
+            ]
+          }
+        ],
+        relic: {
+          title: "Case Relic 5: Aureliano Fernandes v. State of Goa (2023)",
+          citation: "Supreme Court of India | 2023 INSC 527",
+          url: "https://indiankanoon.org/doc/8682112/",
+          voiceRole: "relic",
+          voiceLabel: "High Court Herald (Solemn Judicial Voice)",
+          spokenScript: "Judicial Case Relic Five. Aureliano Fernandes versus State of Goa, decided by the Supreme Court of India in May 2023. Reviewing a decade of implementation of the Posh Act, the Supreme Court observed serious lapses in how committees were constituted and how inquiries were rushed without following natural justice. The Court issued nationwide binding directives ordering all public and private employers to verify their Internal Committees, publish committee contact details on their websites, and conduct regular procedural training so that neither victims nor respondents suffer procedural unfairness.",
+          summary: "In this landmark 2023 judgment, the Supreme Court noted widespread non-compliance and procedural lapses across Indian workplaces. It issued binding pan-India directions requiring strict adherence to natural justice in IC inquiries, transparent display of IC details on portals, and regular training of IC members."
+        },
+        gatekeeperQuiz: [
+          {
+            question: "Question 1 of 2: After an IC inquiry concludes and the respondent is penalized, a manager posts the full names of the complainant and witness on the company's internal town-hall chat to 'show transparency'. Does this violate the POSH Act?",
+            spokenQuestion: "Gatekeeper Trial, Question One of Two. After an inquiry concludes, a manager posts the full names of the complainant and witness on the company chat to show transparency. Does this violate the Posh Act?",
+            options: [
+              { text: "Yes — Section 16 strictly prohibits disclosing the names or identifying particulars of the complainant, respondent, or witnesses.", correct: true, feedback: "Correct! Section 16 mandates strict confidentiality even over the RTI Act; only anonymized summaries of justice secured may be shared." },
+              { text: "No — once the inquiry is over, all names become public record.", correct: false, feedback: "Incorrect! Confidentiality under Section 16 continues permanently even after the inquiry concludes." },
+              { text: "No — the RTI Act overrides the POSH Act.", correct: false, feedback: "Incorrect! Section 16 begins with 'Notwithstanding anything contained in the Right to Information Act, 2005'." }
+            ]
+          },
+          {
+            question: "Question 2 of 2: What did the Supreme Court mandate in Aureliano Fernandes v. State of Goa (2023)?",
+            spokenQuestion: "Gatekeeper Trial, Question Two of Two. What did the Supreme Court mandate in Aureliano Fernandes versus State of Goa in 2023?",
+            options: [
+              { text: "Strict adherence to principles of natural justice during IC inquiries, plus nationwide audits of IC constitution, portal display, and training.", correct: true, feedback: "Correct! The Supreme Court reinforced both rigorous POSH enforcement and fair, unhurried adherence to natural justice." },
+              { text: "Abolishing Internal Committees in favor of external police stations.", correct: false, feedback: "Incorrect! The Court strengthened Internal Committees and mandated proper training for their members." },
+              { text: "Making POSH training optional for companies with fewer than 500 staff.", correct: false, feedback: "Incorrect! Every workplace with 10+ employees must constitute an IC and conduct regular sensitization." }
+            ]
+          }
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // 2. PERSISTENT WEB AUDIO SYNTHESIZER (Persian Oud/Sitar Loop + Sound FX)
+    //    Includes smooth volume ducking when Voiceover speaks!
+    // =========================================================================
+    const SoundFX = {
+      ctx: null,
+      musicGain: null,
+      musicPlaying: false,
+      musicMuted: false,
+      loopTimer: null,
+      stepIndex: 0,
+
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioCtx();
+          this.musicGain = this.ctx.createGain();
+          this.musicGain.gain.value = 0.16;
+          this.musicGain.connect(this.ctx.destination);
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      },
+
+      startMusic() {
+        this.init();
+        if (this.musicPlaying) return;
+        this.musicPlaying = true;
+        // Hijaz Maqam scale (Persian/Middle-Eastern Palace adventure vibe)
+        const scale = [146.83, 155.56, 185.00, 196.00, 220.00, 233.08, 277.18, 293.66];
+        const pattern = [0, 2, 3, 2, 4, 3, 2, 1, 0, 3, 4, 6, 5, 4, 2, 0];
+
+        const playStep = () => {
+          if (!this.musicPlaying) return;
+          if (!this.musicMuted && this.ctx && this.ctx.state === 'running') {
+            const now = this.ctx.currentTime;
+            const freq = scale[pattern[this.stepIndex % pattern.length]];
+
+            // Plucked Oud / Sitar tone
+            const osc = this.ctx.createOscillator();
+            const noteGain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now);
+
+            noteGain.gain.setValueAtTime(0.001, now);
+            noteGain.gain.linearRampToValueAtTime(0.26, now + 0.02);
+            noteGain.gain.exponentialRampToValueAtTime(0.001, now + 0.34);
+
+            osc.connect(noteGain);
+            noteGain.connect(this.musicGain);
+            osc.start(now);
+            osc.stop(now + 0.36);
+
+            // Low Darbuka bass pulse on beats 0 and 4
+            if (this.stepIndex % 4 === 0) {
+              const drumOsc = this.ctx.createOscillator();
+              const drumGain = this.ctx.createGain();
+              drumOsc.type = 'sine';
+              drumOsc.frequency.setValueAtTime(110, now);
+              drumOsc.frequency.exponentialRampToValueAtTime(42, now + 0.18);
+              drumGain.gain.setValueAtTime(0.32, now);
+              drumGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+              drumOsc.connect(drumGain);
+              drumGain.connect(this.musicGain);
+              drumOsc.start(now);
+              drumOsc.stop(now + 0.21);
+            }
+            this.stepIndex++;
+          }
+          this.loopTimer = setTimeout(playStep, 360);
+        };
+        playStep();
+      },
+
+      duckMusic(ducked) {
+        if (!this.ctx || !this.musicGain) return;
+        const target = this.musicMuted ? 0.0001 : (ducked ? 0.035 : 0.16);
+        this.musicGain.gain.setTargetAtTime(target, this.ctx.currentTime, 0.12);
+      },
+
+      play(type) {
+        if (this.musicMuted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        if (type === 'jump') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(220, now);
+          osc.frequency.exponentialRampToValueAtTime(480, now + 0.16);
+          gain.gain.setValueAtTime(0.14, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
+          osc.start(now);
+          osc.stop(now + 0.18);
+        } else if (type === 'sword') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(520, now);
+          osc.frequency.exponentialRampToValueAtTime(140, now + 0.14);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+          osc.start(now);
+          osc.stop(now + 0.16);
+        } else if (type === 'guardDefeat') {
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(310, now);
+          osc.frequency.setValueAtTime(440, now + 0.08);
+          osc.frequency.setValueAtTime(587, now + 0.16);
+          gain.gain.setValueAtTime(0.16, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+          osc.start(now);
+          osc.stop(now + 0.34);
+        } else if (type === 'switch') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(330, now);
+          osc.frequency.setValueAtTime(493.88, now + 0.1);
+          osc.frequency.setValueAtTime(659.25, now + 0.2);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+          osc.start(now);
+          osc.stop(now + 0.45);
+        } else if (type === 'scroll') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.setValueAtTime(554.37, now + 0.08);
+          osc.frequency.setValueAtTime(659.25, now + 0.16);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+          osc.start(now);
+          osc.stop(now + 0.4);
+        } else if (type === 'gatekeeper') {
+          // Deep booming brass horn for Gatekeeper Boss
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(98, now);
+          osc.frequency.setValueAtTime(110, now + 0.18);
+          gain.gain.setValueAtTime(0.22, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
+          osc.start(now);
+          osc.stop(now + 0.5);
+        } else if (type === 'hurt') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, now);
+          osc.frequency.linearRampToValueAtTime(75, now + 0.25);
+          gain.gain.setValueAtTime(0.24, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.27);
+          osc.start(now);
+          osc.stop(now + 0.28);
+        } else if (type === 'rewind') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(680, now);
+          osc.frequency.exponentialRampToValueAtTime(240, now + 0.32);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc.start(now);
+          osc.stop(now + 0.36);
+        }
+      }
+    };
+
+    function toggleMusic() {
+      SoundFX.init();
+      SoundFX.musicMuted = !SoundFX.musicMuted;
+      SoundFX.duckMusic(false);
+      const btn = document.getElementById('btnMusicToggle');
+      const icon = document.getElementById('musicIcon');
+      const label = document.getElementById('musicLabel');
+      if (SoundFX.musicMuted) {
+        icon.textContent = '🔇';
+        label.textContent = 'Music: OFF';
+        btn.className = 'flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border border-slate-600 bg-slate-900 text-slate-400 transition';
+      } else {
+        icon.textContent = '🎵';
+        label.textContent = 'Music: ON';
+        btn.className = 'flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border border-amber-500/50 bg-amber-950/60 text-amber-300 transition';
+      }
+    }
+
+    // =========================================================================
+    // 3. MULTI-CHARACTER VOICEOVER ENGINE (Fixes Roman Numeral "I" -> "One",
+    //    650ms breath lead-in so it never starts abruptly, and 6 distinct
+    //    personas for Narrator, Scroll 1, Scroll 2, Scroll 3, Relic & Gatekeeper)
+    // =========================================================================
+    const VoiceEngine = {
+      enabled: true,
+      voices: [],
+      delayTimer: null,
+      lastSpokenText: "",
+      lastRole: "narrator",
+
+      // Distinct Character Personas
+      cast: {
+        narrator:   { label: "🎙️ Royal Chronicler",       pitch: 1.00, rate: 0.96, preferGender: "any",    voiceOffset: 0 },
+        scroll1:    { label: "🎙️ Sage of the Statute",    pitch: 0.84, rate: 0.91, preferGender: "male",   voiceOffset: 0 },
+        scroll2:    { label: "🎙️ Vizier of Ethics",       pitch: 1.14, rate: 0.99, preferGender: "female", voiceOffset: 1 },
+        scroll3:    { label: "🎙️ Guardian of Boundaries", pitch: 0.94, rate: 0.94, preferGender: "any",    voiceOffset: 2 },
+        relic:      { label: "🎙️ High Court Herald",      pitch: 0.80, rate: 0.90, preferGender: "male",   voiceOffset: 1 },
+        gatekeeper: { label: "🎙️ Palace Gatekeeper Boss", pitch: 0.65, rate: 0.86, preferGender: "male",   voiceOffset: 0 }
+      },
+
+      init() {
+        if (!('speechSynthesis' in window)) return;
+        const loadVoices = () => {
+          this.voices = window.speechSynthesis.getVoices() || [];
+        };
+        loadVoices();
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+      },
+
+      // Phonetic Normalization: Guarantees "Scroll I" is NEVER read as "Scroll eye"
+      normalizeForSpeech(rawText) {
+        if (!rawText) return "";
+        return rawText
+          .replace(/\bScroll\s+III\b/gi, "Scroll Three")
+          .replace(/\bScroll\s+II\b/gi, "Scroll Two")
+          .replace(/\bScroll\s+I\b/gi, "Scroll One")
+          .replace(/\bScroll\s+1\b/gi, "Scroll One")
+          .replace(/\bScroll\s+2\b/gi, "Scroll Two")
+          .replace(/\bScroll\s+3\b/gi, "Scroll Three")
+          .replace(/\bPart\s+I\b/gi, "Part One")
+          .replace(/\bPart\s+II\b/gi, "Part Two")
+          .replace(/\bPart\s+III\b/gi, "Part Three")
+          .replace(/\bLevel\s+I\b/gi, "Level One")
+          .replace(/\bLevel\s+II\b/gi, "Level Two")
+          .replace(/\bLevel\s+III\b/gi, "Level Three")
+          .replace(/\bLevel\s+IV\b/gi, "Level Four")
+          .replace(/\bLevel\s+V\b/gi, "Level Five")
+          .replace(/\bPOSH\b/g, "Posh")
+          .replace(/\bIC\b/g, "Internal Committee")
+          .replace(/\bSec\.\s*/gi, "Section ")
+          .replace(/\bSec\s+(\d+)/gi, "Section $1")
+          .replace(/Section\s+(\d+)\(([a-z])\)/gi, "Section $1, clause $2")
+          .replace(/Section\s+(\d+)\((\d+)\)/gi, "Section $1, sub-section $2")
+          .replace(/\bv\.\s/gi, "versus ")
+          .replace(/₹\s*([\d.,]+)\s*Cr(ore)?/gi, "$1 Crore rupees")
+          .replace(/₹\s*([\d.,]+)/g, "$1 rupees");
+      },
+
+      pickVoiceForRole(roleKey) {
+        if (!this.voices || this.voices.length === 0) {
+          this.voices = ('speechSynthesis' in window) ? window.speechSynthesis.getVoices() : [];
+        }
+        const englishVoices = this.voices.filter(v => v.lang && v.lang.toLowerCase().startsWith('en'));
+        const pool = englishVoices.length > 0 ? englishVoices : this.voices;
+        if (pool.length === 0) return null;
+
+        const persona = this.cast[roleKey] || this.cast.narrator;
+        // Prefer Indian English or natural Google/Microsoft voices if present
+        const preferredPool = pool.filter(v =>
+          /en-IN|India|Google|Natural|Rishi|Veena|Neerja|Prabhat|Daniel|Samantha|Moira/i.test(v.name + " " + v.lang)
+        );
+        const searchList = preferredPool.length > 0 ? preferredPool : pool;
+
+        if (persona.preferGender === "male") {
+          const maleMatch = searchList.find(v => /Male|Rishi|Prabhat|Daniel|Alex|David|Guy|James/i.test(v.name));
+          if (maleMatch) return maleMatch;
+        } else if (persona.preferGender === "female") {
+          const femaleMatch = searchList.find(v => /Female|Veena|Neerja|Samantha|Victoria|Zira|Karen|Moira/i.test(v.name));
+          if (femaleMatch) return femaleMatch;
+        }
+        return searchList[persona.voiceOffset % searchList.length];
+      },
+
+      speak(rawText, roleKey = "narrator", customDelayMs = 650) {
+        this.lastSpokenText = rawText;
+        this.lastRole = roleKey;
+
+        const persona = this.cast[roleKey] || this.cast.narrator;
+        const badge = document.getElementById('hudActiveVoiceBadge');
+        if (badge) badge.textContent = persona.label;
+
+        if (!this.enabled || !('speechSynthesis' in window)) return;
+
+        // Cancel any previous speech or pending timer cleanly
+        if (this.delayTimer) clearTimeout(this.delayTimer);
+        window.speechSynthesis.cancel();
+
+        // Duck the background music first so the chime finishes and the voice starts smoothly
+        SoundFX.duckMusic(true);
+
+        const cleanText = this.normalizeForSpeech(rawText);
+        // Split into natural sentences so there is a gentle cadence between sentences
+        const sentences = cleanText.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [cleanText];
+
+        this.delayTimer = setTimeout(() => {
+          if (!this.enabled) return;
+          const chosenVoice = this.pickVoiceForRole(roleKey);
+
+          sentences.forEach((sentence, idx) => {
+            const trimmed = sentence.trim();
+            if (!trimmed) return;
+            const utter = new SpeechSynthesisUtterance(trimmed);
+            if (chosenVoice) utter.voice = chosenVoice;
+            utter.pitch = persona.pitch;
+            utter.rate = persona.rate;
+            utter.volume = 1.0;
+
+            if (idx === sentences.length - 1) {
+              utter.onend = () => {
+                SoundFX.duckMusic(false);
+              };
+              utter.onerror = () => {
+                SoundFX.duckMusic(false);
+              };
+            }
+            window.speechSynthesis.speak(utter);
+          });
+        }, customDelayMs);
+      },
+
+      stop() {
+        if (this.delayTimer) clearTimeout(this.delayTimer);
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        SoundFX.duckMusic(false);
+      }
+    };
+
+    function toggleVoiceover() {
+      VoiceEngine.enabled = !VoiceEngine.enabled;
+      const btn = document.getElementById('btnVoiceToggle');
+      const icon = document.getElementById('voiceIcon');
+      const label = document.getElementById('voiceLabel');
+      if (!VoiceEngine.enabled) {
+        VoiceEngine.stop();
+        icon.textContent = '🔇';
+        label.textContent = 'Voice: OFF';
+        btn.className = 'flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border border-slate-600 bg-slate-900 text-slate-400 transition';
+      } else {
+        icon.textContent = '🗣️';
+        label.textContent = 'Voice: ON';
+        btn.className = 'flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border border-emerald-500/50 bg-emerald-950/60 text-emerald-300 transition';
+        if (VoiceEngine.lastSpokenText) {
+          VoiceEngine.speak(VoiceEngine.lastSpokenText, VoiceEngine.lastRole, 350);
+        }
+      }
+    }
+
+    function replayCurrentModalVoice() {
+      if (!VoiceEngine.enabled) {
+        toggleVoiceover();
+      } else if (VoiceEngine.lastSpokenText) {
+        VoiceEngine.speak(VoiceEngine.lastSpokenText, VoiceEngine.lastRole, 300);
+      }
+    }
+
+    // =========================================================================
+    // 4. REAL PRINCE OF PERSIA 2D PLATFORMER PHYSICS, OBSTACLES & COMBAT ENGINE
+    //    World coordinate space: 1200 x 540 logical units (scales cleanly to any screen)
+    // =========================================================================
+    const WORLD_W = 1200;
+    const WORLD_H = 540;
+    const GRAVITY = 0.56;
+
+    let currentLevelIdx = 0;
+    let gameStarted = false;
+    let activeModal = null; // 'parchment' | 'gatekeeper' | null
+    let inspectingItem = null;
+
+    // Sequential unlock state for the current level
+    let levelProgress = {
+      scroll1: false,
+      scroll2: false,
+      scroll3: false,
+      relic: false,
+      bridgeExtended: false,
+      gatePassed: false
+    };
+
+    // Gatekeeper quiz state
+    let gkQuizIndex = 0;
+    let gkAnswered = false;
+
+    // Prince character state
+    const prince = {
+      x: 75,
+      y: 380,
+      vx: 0,
+      vy: 0,
+      w: 30,
+      h: 48,
+      facing: 1,
+      onGround: false,
+      hearts: 3,
+      sands: 3,
+      invulnFrames: 0,
+      attackFrames: 0,
+      safeX: 75,
+      safeY: 380,
+      targetTapX: null,
+      targetTapY: null
+    };
+
+    // Level geometry & interactive hazards
+    let platforms = [];
+    let spikeTraps = [];
+    let pendulums = [];
+    let guards = [];
+    let bridgeSwitch = null;
+    let drawbridgePlatform = null;
+    let interactNodes = [];
+
+    function buildLevelWorld(idx) {
+      currentLevelIdx = idx;
+      const lvl = LEVELS[idx];
+
+      levelProgress = {
+        scroll1: false,
+        scroll2: false,
+        scroll3: false,
+        relic: false,
+        bridgeExtended: false,
+        gatePassed: false
+      };
+
+      prince.x = 70;
+      prince.y = 390;
+      prince.vx = 0;
+      prince.vy = 0;
+      prince.hearts = 3;
+      prince.sands = 3;
+      prince.invulnFrames = 0;
+      prince.attackFrames = 0;
+      prince.safeX = 70;
+      prince.safeY = 390;
+      prince.targetTapX = null;
+
+      // Multi-tiered Palace Ledges requiring real jumps across gaps and climbing up/down
+      platforms = [
+        // 0: Starting Courtyard Ground (Left)
+        { x: 20,  y: 445, w: 255, h: 24, label: "Start Courtyard" },
+        // 1: Mid-Left Stone Ledge (Jump across chasm 1 + spike trap; holds Scroll 1)
+        { x: 315, y: 365, w: 250, h: 22, label: "Scroll 1 Ledge" },
+        // 2: Stepping Stone to Upper Tier
+        { x: 210, y: 275, w: 95,  h: 18, label: "Stepping Pillar" },
+        // 3: Upper Center Gallery (Patrolled by Guard 1; holds Scroll 2 & Bridge Switch)
+        { x: 345, y: 205, w: 340, h: 22, label: "Upper Gallery" },
+        // 4: High Right Balcony (Jump past swinging Pendulum Blade; holds Scroll 3)
+        { x: 735, y: 175, w: 235, h: 22, label: "Scroll 3 Balcony" },
+        // 5: Mid-Right Watchtower Ledge (Drops down toward Lower Hall)
+        { x: 615, y: 330, w: 145, h: 20, label: "Watchtower Ledge" },
+        // 6: Lower Right Gatekeeper Platform (Patrolled by Guard 2; holds Relic & Gatekeeper Boss)
+        { x: 865, y: 430, w: 310, h: 24, label: "Gatekeeper Citadel" }
+      ];
+
+      // Drawbridge Platform connecting Watchtower Ledge (x:760) to Gatekeeper Citadel (x:865)
+      drawbridgePlatform = {
+        x: 755,
+        y: 380,
+        w: 115,
+        h: 16,
+        extended: false
+      };
+
+      // Golden Floor Pressure Switch on Upper Gallery to extend the Drawbridge
+      bridgeSwitch = {
+        x: 635,
+        y: 193,
+        w: 36,
+        h: 12,
+        pressed: false
+      };
+
+      // Timed Pop-Up Floor Spikes (cycle every ~140 frames with clear warning glint)
+      spikeTraps = [
+        { x: 365, y: 365, w: 46, phaseOffset: 0 },
+        { x: 800, y: 175, w: 46, phaseOffset: 65 }
+      ];
+
+      // Swinging Overhead Pendulum Blades
+      pendulums = [
+        { pivotX: 705, pivotY: 55, length: 125, speed: 0.032 + idx * 0.003, angle: 0, maxAngle: 0.68 }
+      ];
+
+      // Patrolling Shadow Guards (Player must strike with ⚔️ STRIKE or get knocked back)
+      guards = [
+        {
+          id: "g1",
+          name: "Shadow Sentinel",
+          x: 430,
+          y: 205 - 46,
+          w: 30,
+          h: 46,
+          minX: 360,
+          maxX: 525,
+          vx: 1.35 + idx * 0.12,
+          alive: true
+        },
+        {
+          id: "g2",
+          name: "Royal Gate Warden",
+          x: 960,
+          y: 430 - 46,
+          w: 30,
+          h: 46,
+          minX: 880,
+          maxX: 1020,
+          vx: -(1.45 + idx * 0.12),
+          alive: true
+        }
+      ];
+
+      // 5 Sequential Interactive Nodes (Scroll 1 -> Scroll 2 -> Scroll 3 -> Case Relic -> Gatekeeper Boss)
+      interactNodes = [
+        {
+          key: "scroll1",
+          type: "scroll",
+          index: 0,
+          x: 515,
+          y: 365 - 38,
+          label: "SCROLL 1",
+          subLabel: "Statutory Rule"
+        },
+        {
+          key: "scroll2",
+          type: "scroll",
+          index: 1,
+          x: 565,
+          y: 205 - 38,
+          label: "SCROLL 2",
+          subLabel: "Core Mandate"
+        },
+        {
+          key: "scroll3",
+          type: "scroll",
+          index: 2,
+          x: 915,
+          y: 175 - 38,
+          label: "SCROLL 3",
+          subLabel: "Practical Duty"
+        },
+        {
+          key: "relic",
+          type: "relic",
+          x: 910,
+          y: 430 - 40,
+          label: "CASE RELIC",
+          subLabel: "Court Precedent"
+        },
+        {
+          key: "gatekeeper",
+          type: "gatekeeper",
+          x: 1110,
+          y: 430 - 58,
+          label: "GATEKEEPER",
+          subLabel: "2-Question Quiz!"
+        }
+      ];
+
+      updateHUD();
+
+      if (gameStarted) {
+        VoiceEngine.speak(
+          `Level ${lvl.levelNumber}: ${lvl.name}. Jump the spike traps, strike the patrolling Shadow Guards with your sword, and unfurl Scroll One first.`,
+          "narrator",
+          650
+        );
+      }
+    }
+
+    // Check whether a given node is currently unlocked in the strict sequence
+    function isNodeUnlocked(key) {
+      if (key === "scroll1") return true;
+      if (key === "scroll2") return levelProgress.scroll1;
+      if (key === "scroll3") return levelProgress.scroll2;
+      if (key === "relic")   return levelProgress.scroll3;
+      if (key === "gatekeeper") return levelProgress.relic;
+      return false;
+    }
+
+    function isNodeCompleted(key) {
+      if (key === "scroll1") return levelProgress.scroll1;
+      if (key === "scroll2") return levelProgress.scroll2;
+      if (key === "scroll3") return levelProgress.scroll3;
+      if (key === "relic")   return levelProgress.relic;
+      if (key === "gatekeeper") return levelProgress.gatePassed;
+      return false;
+    }
+
+    function getCurrentTargetNodeKey() {
+      if (!levelProgress.scroll1) return "scroll1";
+      if (!levelProgress.scroll2) return "scroll2";
+      if (!levelProgress.scroll3) return "scroll3";
+      if (!levelProgress.relic)   return "relic";
+      return "gatekeeper";
+    }
+
+    function updateHUD() {
+      const lvl = LEVELS[currentLevelIdx];
+      document.getElementById('hudLevelBadge').textContent = `LVL ${lvl.levelNumber} / 5`;
+      const titleEl = document.getElementById('hudLevelTitle');
+      if (titleEl) titleEl.textContent = lvl.name;
+
+      // Hearts
+      document.getElementById('hudHearts').textContent =
+        "❤️".repeat(Math.max(0, prince.hearts)) + "🖤".repeat(Math.max(0, 3 - prince.hearts));
+      document.getElementById('hudSandCount').textContent = `⏳ ${prince.sands} Sands`;
+
+      // Stage Pills
+      const stages = [
+        { key: "scroll1",    short: "📜Scroll 1" },
+        { key: "scroll2",    short: "📜Scroll 2" },
+        { key: "scroll3",    short: "📜Scroll 3" },
+        { key: "relic",      short: "🏺Relic" },
+        { key: "gatekeeper", short: "⛩️Gate Quiz (2Q)" }
+      ];
+      const activeKey = getCurrentTargetNodeKey();
+      const pillsHtml = stages.map(s => {
+        const done = isNodeCompleted(s.key);
+        const active = (s.key === activeKey && !done);
+        if (done) {
+          return `<span class="px-2 py-0.5 rounded-md bg-emerald-950/90 border border-emerald-400/60 text-emerald-300 text-[10px] font-bold shrink-0">✓ ${s.short}</span>`;
+        } else if (active) {
+          return `<span class="px-2 py-0.5 rounded-md bg-amber-500 text-slate-950 text-[10px] font-extrabold shrink-0 animate-pulse">▶ ${s.short}</span>`;
+        } else {
+          return `<span class="px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700 text-slate-500 text-[10px] font-semibold shrink-0">🔒 ${s.short}</span>`;
+        }
+      }).join("");
+      document.getElementById('hudStagePills').innerHTML = pillsHtml;
+
+      // Objective Banner Text
+      const objEl = document.getElementById('hudObjectiveText');
+      if (!levelProgress.scroll1) {
+        objEl.textContent = `Quest 1/5: Jump the chasm & floor spikes to unfurl Scroll 1!`;
+      } else if (!levelProgress.scroll2) {
+        objEl.textContent = `Quest 2/5: Climb the stepping pillar & strike the Shadow Guard (⚔️ STRIKE) to reach Scroll 2!`;
+      } else if (!levelProgress.scroll3) {
+        objEl.textContent = `Quest 3/5: Step on the Golden Bridge Switch & dodge the swinging blade to unfurl Scroll 3!`;
+      } else if (!levelProgress.relic) {
+        objEl.textContent = `Quest 4/5: Cross the lower Drawbridge & defeat the Gate Warden to inspect the Case Relic!`;
+      } else if (!levelProgress.gatePassed) {
+        objEl.textContent = `FINAL BOSS TRIAL: Approach the Palace Gatekeeper & answer his 2-Question Quiz to open the Gate!`;
+      } else {
+        objEl.textContent = `Palace Gate Unsealed! Advancing to next level...`;
+      }
+    }
+
+    // =========================================================================
+    // 5. CONTROLS: KEYBOARD, HOLD BUTTONS & 1-TAP PHYSICAL PATHING
+    // =========================================================================
+    const keys = { left: false, right: false, jump: false };
+
+    window.addEventListener('keydown', (e) => {
+      if (activeModal) return;
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = true;
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = true;
+      if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') {
+        e.preventDefault();
+        triggerJump();
+      }
+      if (e.code === 'KeyF' || e.code === 'KeyK' || e.code === 'Enter') {
+        playerSwordStrike();
+      }
+      if (e.code === 'KeyR') {
+        useDaggerRewind();
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = false;
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = false;
+    });
+
+    function bindHoldButton(btnId, dirKey) {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      const start = (e) => { e.preventDefault(); prince.targetTapX = null; keys[dirKey] = true; };
+      const end = (e) => { e.preventDefault(); keys[dirKey] = false; };
+      btn.addEventListener('mousedown', start);
+      btn.addEventListener('mouseup', end);
+      btn.addEventListener('mouseleave', end);
+      btn.addEventListener('touchstart', start, { passive: false });
+      btn.addEventListener('touchend', end, { passive: false });
+    }
+    bindHoldButton('btnLeft', 'left');
+    bindHoldButton('btnRight', 'right');
+
+    const jumpBtn = document.getElementById('btnJump');
+    if (jumpBtn) {
+      jumpBtn.addEventListener('mousedown', (e) => { e.preventDefault(); triggerJump(); });
+      jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); triggerJump(); }, { passive: false });
+    }
+
+    function triggerJump() {
+      if (!gameStarted || activeModal) return;
+      if (prince.onGround) {
+        prince.vy = -12.6;
+        prince.onGround = false;
+        SoundFX.play('jump');
+      }
+    }
+
+    function playerSwordStrike() {
+      if (!gameStarted || activeModal) return;
+      prince.attackFrames = 16;
+      SoundFX.play('sword');
+
+      // Check if any living guard is within sword reach
+      const swordReachX = prince.facing === 1 ? prince.x + prince.w + 48 : prince.x - 48;
+      guards.forEach(g => {
+        if (!g.alive) return;
+        const horizDist = Math.abs((g.x + g.w / 2) - (prince.x + prince.w / 2));
+        const vertDist = Math.abs((g.y + g.h / 2) - (prince.y + prince.h / 2));
+        if (horizDist < 72 && vertDist < 50) {
+          g.alive = false;
+          SoundFX.play('guardDefeat');
+          showCombatToast(`⚔️ ${g.name} Defeated! Path Cleared!`);
+        }
+      });
+
+      // Also allow striking/interacting with a nearby unlocked Scroll/Relic/Gatekeeper
+      checkAndTriggerNearbyNode(false);
+    }
+
+    function useDaggerRewind() {
+      if (!gameStarted || activeModal) return;
+      if (prince.sands <= 0 && prince.hearts === 3) {
+        showCombatToast("⏳ No Sands of Time left!");
+        return;
+      }
+      if (prince.sands > 0) prince.sands--;
+      prince.x = prince.safeX;
+      prince.y = prince.safeY - 10;
+      prince.vx = 0;
+      prince.vy = 0;
+      prince.hearts = 3;
+      prince.invulnFrames = 60;
+      prince.targetTapX = null;
+      SoundFX.play('rewind');
+      updateHUD();
+      showCombatToast("⏳ Sands of Time Rewound to Safe Ledge!");
+    }
+
+    function showCombatToast(msg) {
+      const toast = document.getElementById('combatToast');
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.classList.remove('hidden');
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => toast.classList.add('hidden'), 2000);
+    }
+
+    // 1-Tap Canvas Interaction: Tapping on the canvas makes the Prince physically run
+    // along the ledges and jump when reaching a ledge edge or tapping higher!
+    const canvas = document.getElementById('gameCanvas');
+    canvas.addEventListener('pointerdown', (e) => {
+      if (!gameStarted || activeModal) return;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = WORLD_W / rect.width;
+      const scaleY = WORLD_H / rect.height;
+      const worldX = (e.clientX - rect.left) * scaleX;
+      const worldY = (e.clientY - rect.top) * scaleY;
+
+      // If tapping directly on a living guard within range, lunge and strike!
+      for (const g of guards) {
+        if (g.alive && Math.hypot(worldX - (g.x + g.w/2), worldY - (g.y + g.h/2)) < 55) {
+          if (Math.abs((g.x + g.w/2) - (prince.x + prince.w/2)) < 85) {
+            prince.facing = g.x > prince.x ? 1 : -1;
+            playerSwordStrike();
+            return;
+          }
+        }
+      }
+
+      // If tapping on an unlocked interactive node that Prince is already standing next to, open it!
+      for (const node of interactNodes) {
+        if (Math.hypot(worldX - node.x, worldY - node.y) < 55) {
+          const distToPrince = Math.hypot((prince.x + prince.w/2) - node.x, (prince.y + prince.h/2) - node.y);
+          if (distToPrince < 75) {
+            if (isNodeUnlocked(node.key)) {
+              openNodeModal(node);
+              return;
+            } else {
+              showCombatToast(`🔒 Locked! Complete ${getCurrentTargetNodeKey().toUpperCase()} first!`);
+              return;
+            }
+          }
+        }
+      }
+
+      // Set physical running destination (no teleportation—Prince must physically run & jump hazards)
+      prince.targetTapX = worldX;
+      prince.targetTapY = worldY;
+      if (worldY < prince.y - 35 && prince.onGround) {
+        triggerJump();
+      }
+    });
+
+    // =========================================================================
+    // 6. MAIN PHYSICS & HAZARD COLLISION LOOP
+    // =========================================================================
+    let frameCount = 0;
+    let nearbyNode = null;
+
+    function damagePrince(reason) {
+      if (prince.invulnFrames > 0) return;
+      prince.hearts = Math.max(0, prince.hearts - 1);
+      prince.invulnFrames = 70;
+      prince.vy = -7.5;
+      prince.vx = -prince.facing * 5.5;
+      prince.targetTapX = null;
+      SoundFX.play('hurt');
+
+      if (prince.hearts <= 0) {
+        showCombatToast(`💥 ${reason}! Sands of Time Rewound!`);
+        setTimeout(() => {
+          prince.hearts = 3;
+          prince.x = prince.safeX;
+          prince.y = prince.safeY - 12;
+          prince.vx = 0;
+          prince.vy = 0;
+          updateHUD();
+        }, 350);
+      } else {
+        showCombatToast(`⚠️ ${reason}! (-1 ❤️)`);
+      }
+      updateHUD();
+    }
+
+    function updatePhysics() {
+      if (!gameStarted || activeModal) return;
+      frameCount++;
+
+      if (prince.invulnFrames > 0) prince.invulnFrames--;
+      if (prince.attackFrames > 0) prince.attackFrames--;
+
+      // Horizontal Movement (Buttons/Keys or 1-Tap Ground Running)
+      const speed = 4.3;
+      if (keys.left) {
+        prince.vx = -speed;
+        prince.facing = -1;
+        prince.targetTapX = null;
+      } else if (keys.right) {
+        prince.vx = speed;
+        prince.facing = 1;
+        prince.targetTapX = null;
+      } else if (prince.targetTapX !== null) {
+        const dx = prince.targetTapX - (prince.x + prince.w / 2);
+        if (Math.abs(dx) > 10) {
+          prince.vx = Math.sign(dx) * speed;
+          prince.facing = Math.sign(dx);
+
+          // Auto-leap if running toward a chasm edge or higher platform during 1-tap pathing
+          if (prince.onGround) {
+            const lookAheadX = prince.x + prince.w / 2 + prince.facing * 26;
+            const hasFloorAhead = getActivePlatforms().some(p =>
+              lookAheadX >= p.x && lookAheadX <= p.x + p.w &&
+              Math.abs((prince.y + prince.h) - p.y) <= 8
+            );
+            if (!hasFloorAhead) {
+              triggerJump();
+            }
+          }
+        } else {
+          prince.vx = 0;
+          prince.targetTapX = null;
+        }
+      } else {
+        prince.vx *= 0.78;
+        if (Math.abs(prince.vx) < 0.1) prince.vx = 0;
+      }
+
+      // Apply horizontal velocity
+      prince.x += prince.vx;
+      prince.x = Math.max(16, Math.min(WORLD_W - prince.w - 16, prince.x));
+
+      // Apply gravity
+      const prevBottom = prince.y + prince.h;
+      prince.vy += GRAVITY;
+      if (prince.vy > 13) prince.vy = 13;
+      prince.y += prince.vy;
+      prince.onGround = false;
+
+      // Platform landing collisions
+      const activePlats = getActivePlatforms();
+      for (const p of activePlats) {
+        const withinX = (prince.x + prince.w - 4 > p.x) && (prince.x + 4 < p.x + p.w);
+        if (withinX && prince.vy >= 0 && prevBottom <= p.y + 10 && (prince.y + prince.h) >= p.y) {
+          prince.y = p.y - prince.h;
+          prince.vy = 0;
+          prince.onGround = true;
+          // Save safe checkpoint if not standing directly on a spike trap
+          const onSpike = spikeTraps.some(s => Math.abs((prince.x + prince.w/2) - (s.x + s.w/2)) < 38);
+          if (!onSpike) {
+            prince.safeX = prince.x;
+            prince.safeY = prince.y;
+          }
+          break;
+        }
+      }
+
+      // Pit fall hazard (falling into the abyss below y = 525)
+      if (prince.y > WORLD_H - 10) {
+        damagePrince("Fell into the Palace Chasm");
+        prince.x = prince.safeX;
+        prince.y = prince.safeY - 12;
+        prince.vx = 0;
+        prince.vy = 0;
+      }
+
+      // Check Golden Floor Bridge Switch
+      if (bridgeSwitch && !bridgeSwitch.pressed) {
+        const overlapSwitch =
+          Math.abs((prince.x + prince.w / 2) - (bridgeSwitch.x + bridgeSwitch.w / 2)) < 28 &&
+          Math.abs((prince.y + prince.h) - (bridgeSwitch.y + bridgeSwitch.h)) < 16;
+        if (overlapSwitch) {
+          bridgeSwitch.pressed = true;
+          levelProgress.bridgeExtended = true;
+          if (drawbridgePlatform) drawbridgePlatform.extended = true;
+          SoundFX.play('switch');
+          showCombatToast("⚙️ Golden Switch Pressed! Lower Drawbridge Extended!");
+        }
+      }
+
+      // Update & Check Timed Pop-Up Floor Spikes
+      for (const s of spikeTraps) {
+        const cycle = (frameCount + s.phaseOffset) % 150;
+        s.isUp = cycle >= 95 && cycle <= 140;
+        s.isWarning = cycle >= 70 && cycle < 95;
+        if (s.isUp) {
+          const hitSpike =
+            (prince.x + prince.w - 6 > s.x) &&
+            (prince.x + 6 < s.x + s.w) &&
+            Math.abs((prince.y + prince.h) - s.y) < 18;
+          if (hitSpike) {
+            damagePrince("Impaled on Floor Spikes");
+          }
+        }
+      }
+
+      // Update & Check Swinging Pendulum Blades
+      for (const pend of pendulums) {
+        pend.angle = Math.sin(frameCount * pend.speed) * pend.maxAngle;
+        const bobX = pend.pivotX + Math.sin(pend.angle) * pend.length;
+        const bobY = pend.pivotY + Math.cos(pend.angle) * pend.length;
+        pend.bobX = bobX;
+        pend.bobY = bobY;
+
+        const distToBlade = Math.hypot((prince.x + prince.w / 2) - bobX, (prince.y + prince.h / 2) - bobY);
+        if (distToBlade < 28) {
+          damagePrince("Sliced by Swinging Pendulum Blade");
+        }
+      }
+
+      // Update & Check Patrolling Shadow Guards
+      for (const g of guards) {
+        if (!g.alive) continue;
+        g.x += g.vx;
+        if (g.x < g.minX) { g.x = g.minX; g.vx = Math.abs(g.vx); }
+        if (g.x > g.maxX) { g.x = g.maxX; g.vx = -Math.abs(g.vx); }
+
+        const distX = Math.abs((prince.x + prince.w / 2) - (g.x + g.w / 2));
+        const distY = Math.abs((prince.y + prince.h / 2) - (g.y + g.h / 2));
+
+        if (distX < 26 && distY < 36) {
+          if (prince.attackFrames > 0) {
+            g.alive = false;
+            SoundFX.play('guardDefeat');
+            showCombatToast(`⚔️ ${g.name} Defeated!`);
+          } else {
+            damagePrince(`Struck by ${g.name} (Use ⚔️ STRIKE!)`);
+          }
+        }
+      }
+
+      // Check proximity to Interactive Nodes (Scrolls 1-3, Case Relic, Gatekeeper Boss)
+      checkAndTriggerNearbyNode(true);
+    }
+
+    function getActivePlatforms() {
+      if (drawbridgePlatform && drawbridgePlatform.extended) {
+        return [...platforms, drawbridgePlatform];
+      }
+      return platforms;
+    }
+
+    function checkAndTriggerNearbyNode(autoPromptOnly) {
+      nearbyNode = null;
+      for (const node of interactNodes) {
+        const dist = Math.hypot((prince.x + prince.w / 2) - node.x, (prince.y + prince.h / 2) - node.y);
+        if (dist < 56) {
+          nearbyNode = node;
+          break;
+        }
+      }
+
+      const promptWrap = document.getElementById('floatingInteractPrompt');
+      const promptLabel = document.getElementById('floatingInteractLabel');
+
+      if (nearbyNode) {
+        const unlocked = isNodeUnlocked(nearbyNode.key);
+        const completed = isNodeCompleted(nearbyNode.key);
+        promptWrap.classList.remove('hidden');
+
+        if (!unlocked) {
+          promptLabel.textContent = `🔒 LOCKED — COMPLETE ${getCurrentTargetNodeKey().toUpperCase()} FIRST`;
+        } else if (nearbyNode.type === 'gatekeeper') {
+          promptLabel.textContent = `⛩️ CHALLENGE GATEKEEPER (2-QUESTION QUIZ)`;
+          // Auto-open if this is the active target and not yet completed
+          if (!completed && !autoPromptOnly) openNodeModal(nearbyNode);
+        } else if (nearbyNode.type === 'relic') {
+          promptLabel.textContent = completed ? `🏺 RE-INSPECT CASE RELIC` : `🏺 INSPECT CASE RELIC`;
+          if (!completed && !autoPromptOnly) openNodeModal(nearbyNode);
+        } else {
+          promptLabel.textContent = completed ? `📜 RE-READ ${nearbyNode.label}` : `📜 UNFURL ${nearbyNode.label}`;
+          if (!completed && !autoPromptOnly) openNodeModal(nearbyNode);
+        }
+
+        // If the player just arrived at the active target node, automatically unfurl it!
+        if (unlocked && !completed && nearbyNode.key === getCurrentTargetNodeKey() && prince.onGround) {
+          openNodeModal(nearbyNode);
+        }
+      } else {
+        promptWrap.classList.add('hidden');
+      }
+    }
+
+    function triggerNearbyInteraction() {
+      if (!nearbyNode) return;
+      if (!isNodeUnlocked(nearbyNode.key)) {
+        showCombatToast(`🔒 Complete ${getCurrentTargetNodeKey().toUpperCase()} first!`);
+        return;
+      }
+      openNodeModal(nearbyNode);
+    }
+
+    // =========================================================================
+    // 7. CANVAS RENDERING: PERSIAN PALACE, SPIKES, PENDULUMS, GUARDS & BOSS
+    // =========================================================================
+    const ctx = canvas.getContext('2d');
+
+    function renderGame() {
+      if (canvas.width !== WORLD_W || canvas.height !== WORLD_H) {
+        canvas.width = WORLD_W;
+        canvas.height = WORLD_H;
+      }
+
+      const lvl = LEVELS[currentLevelIdx];
+
+      // 1. Night Palace Sky Gradient
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, WORLD_H);
+      skyGrad.addColorStop(0, lvl.skyTop);
+      skyGrad.addColorStop(1, lvl.skyBottom);
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+
+      // 2. Crescent Moon & Stars
+      ctx.fillStyle = "rgba(253, 230, 138, 0.85)";
+      ctx.beginPath();
+      ctx.arc(1060, 75, 28, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = lvl.skyTop;
+      ctx.beginPath();
+      ctx.arc(1070, 68, 24, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Background Persian Arches & Pillars
+      ctx.strokeStyle = "rgba(245, 158, 11, 0.14)";
+      ctx.lineWidth = 2;
+      for (let ax = 80; ax < WORLD_W; ax += 220) {
+        ctx.beginPath();
+        ctx.moveTo(ax, WORLD_H);
+        ctx.lineTo(ax, 130);
+        ctx.quadraticCurveTo(ax + 70, 65, ax + 140, 130);
+        ctx.lineTo(ax + 140, WORLD_H);
+        ctx.stroke();
+      }
+
+      // Abyss Pit Lava/Sand Glow at bottom
+      const abyssGrad = ctx.createLinearGradient(0, WORLD_H - 35, 0, WORLD_H);
+      abyssGrad.addColorStop(0, "rgba(225, 29, 72, 0)");
+      abyssGrad.addColorStop(1, "rgba(225, 29, 72, 0.45)");
+      ctx.fillStyle = abyssGrad;
+      ctx.fillRect(0, WORLD_H - 35, WORLD_W, 35);
+
+      // 3. Draw Stone Ledges & Platforms
+      for (const p of platforms) {
+        // Stone body
+        const platGrad = ctx.createLinearGradient(p.x, p.y, p.x, p.y + p.h);
+        platGrad.addColorStop(0, "#573b26");
+        platGrad.addColorStop(1, "#2a1b12");
+        ctx.fillStyle = platGrad;
+        ctx.fillRect(p.x, p.y, p.w, p.h);
+
+        // Golden Sandstone Trim
+        ctx.fillStyle = "#f59e0b";
+        ctx.fillRect(p.x, p.y, p.w, 4);
+
+        // Brick lines
+        ctx.strokeStyle = "rgba(0,0,0,0.35)";
+        ctx.lineWidth = 1;
+        for (let bx = p.x + 30; bx < p.x + p.w; bx += 35) {
+          ctx.beginPath();
+          ctx.moveTo(bx, p.y + 4);
+          ctx.lineTo(bx, p.y + p.h);
+          ctx.stroke();
+        }
+      }
+
+      // 4. Draw Golden Bridge Switch & Drawbridge
+      if (bridgeSwitch) {
+        ctx.fillStyle = bridgeSwitch.pressed ? "#10b981" : "#f59e0b";
+        ctx.fillRect(bridgeSwitch.x, bridgeSwitch.pressed ? bridgeSwitch.y + 6 : bridgeSwitch.y, bridgeSwitch.w, bridgeSwitch.pressed ? 6 : 12);
+        ctx.font = "bold 10px 'Plus Jakarta Sans', sans-serif";
+        ctx.fillStyle = "#fde68a";
+        ctx.textAlign = "center";
+        ctx.fillText(bridgeSwitch.pressed ? "✓ BRIDGE OPEN" : "🔽 BRIDGE SWITCH", bridgeSwitch.x + bridgeSwitch.w / 2, bridgeSwitch.y - 6);
+      }
+
+      if (drawbridgePlatform) {
+        if (drawbridgePlatform.extended) {
+          ctx.fillStyle = "#059669";
+          ctx.fillRect(drawbridgePlatform.x, drawbridgePlatform.y, drawbridgePlatform.w, drawbridgePlatform.h);
+          ctx.fillStyle = "#6ee7b7";
+          ctx.fillRect(drawbridgePlatform.x, drawbridgePlatform.y, drawbridgePlatform.w, 3);
+        } else {
+          ctx.strokeStyle = "rgba(245, 158, 11, 0.35)";
+          ctx.setLineDash([5, 5]);
+          ctx.strokeRect(drawbridgePlatform.x, drawbridgePlatform.y, drawbridgePlatform.w, drawbridgePlatform.h);
+          ctx.setLineDash([]);
+          ctx.font = "bold 10px 'Plus Jakarta Sans', sans-serif";
+          ctx.fillStyle = "rgba(252, 211, 77, 0.7)";
+          ctx.textAlign = "center";
+          ctx.fillText("Drawbridge (Hit Switch Above)", drawbridgePlatform.x + drawbridgePlatform.w / 2, drawbridgePlatform.y - 5);
+        }
+      }
+
+      // 5. Draw Pop-Up Floor Spike Traps
+      for (const s of spikeTraps) {
+        // Base slot
+        ctx.fillStyle = "#1f2937";
+        ctx.fillRect(s.x, s.y - 3, s.w, 6);
+
+        const spikeH = s.isUp ? 22 : (s.isWarning ? 8 : 2);
+        ctx.fillStyle = s.isUp ? "#f43f5e" : (s.isWarning ? "#fbbf24" : "#94a3b8");
+        for (let sx = s.x + 4; sx < s.x + s.w - 4; sx += 10) {
+          ctx.beginPath();
+          ctx.moveTo(sx, s.y);
+          ctx.lineTo(sx + 4, s.y - spikeH);
+          ctx.lineTo(sx + 8, s.y);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
+
+      // 6. Draw Swinging Overhead Pendulum Blades
+      for (const pend of pendulums) {
+        ctx.strokeStyle = "#94a3b8";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(pend.pivotX, pend.pivotY);
+        ctx.lineTo(pend.bobX, pend.bobY);
+        ctx.stroke();
+
+        // Crescent Pendulum Axe Blade
+        ctx.fillStyle = "#e11d48";
+        ctx.beginPath();
+        ctx.arc(pend.bobX, pend.bobY, 18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#fecdd3";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // 7. Draw Interactive Nodes: Scrolls 1-3, Case Relic & Gatekeeper Boss
+      const targetKey = getCurrentTargetNodeKey();
+      for (const node of interactNodes) {
+        const unlocked = isNodeUnlocked(node.key);
+        const completed = isNodeCompleted(node.key);
+        const isCurrentTarget = (node.key === targetKey && !completed);
+        const bobOffset = Math.sin(frameCount * 0.08) * 4;
+
+        if (node.type === "scroll") {
+          // Pedestal + Floating Scroll
+          ctx.fillStyle = completed ? "#10b981" : (unlocked ? "#f59e0b" : "#475569");
+          ctx.beginPath();
+          ctx.roundRect(node.x - 16, node.y - 14 + bobOffset, 32, 28, 6);
+          ctx.fill();
+          ctx.strokeStyle = "#fef3c7";
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          ctx.font = "16px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(completed ? "✅" : (unlocked ? "📜" : "🔒"), node.x, node.y + 5 + bobOffset);
+
+          // Label Tag above Scroll
+          ctx.font = "bold 11px 'Plus Jakarta Sans', sans-serif";
+          ctx.fillStyle = completed ? "#6ee7b7" : (isCurrentTarget ? "#fde047" : "#94a3b8");
+          ctx.fillText(node.label, node.x, node.y - 22 + bobOffset);
+
+        } else if (node.type === "relic") {
+          // Glowing Judicial Urn / Relic
+          ctx.fillStyle = completed ? "#10b981" : (unlocked ? "#06b6d4" : "#475569");
+          ctx.beginPath();
+          ctx.roundRect(node.x - 18, node.y - 16 + bobOffset, 36, 32, 8);
+          ctx.fill();
+          ctx.strokeStyle = "#cffafe";
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          ctx.font = "17px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(completed ? "✅" : (unlocked ? "🏺" : "🔒"), node.x, node.y + 6 + bobOffset);
+
+          ctx.font = "bold 11px 'Plus Jakarta Sans', sans-serif";
+          ctx.fillStyle = completed ? "#6ee7b7" : (isCurrentTarget ? "#67e8f9" : "#94a3b8");
+          ctx.fillText("CASE RELIC", node.x, node.y - 24 + bobOffset);
+
+        } else if (node.type === "gatekeeper") {
+          // Palace Exit Archway
+          ctx.fillStyle = completed ? "#065f46" : (unlocked ? "#881337" : "#1e293b");
+          ctx.beginPath();
+          ctx.roundRect(node.x - 28, node.y - 26, 56, 84, [26, 26, 0, 0]);
+          ctx.fill();
+          ctx.strokeStyle = completed ? "#34d399" : (unlocked ? "#fb7185" : "#64748b");
+          ctx.lineWidth = 3;
+          ctx.stroke();
+
+          // Armored Gatekeeper Boss Sprite standing in front of the Gate
+          ctx.font = "28px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(completed ? "🚪" : "💂‍♂️", node.x, node.y + 28);
+
+          // High-Visibility Callout Bubble above Gatekeeper explaining the 2-Question Boss Quiz!
+          const bubbleW = 195;
+          const bubbleH = 34;
+          const bx = Math.min(WORLD_W - bubbleW - 10, node.x - bubbleW / 2);
+          const by = node.y - 68 + bobOffset * 0.5;
+
+          ctx.fillStyle = unlocked ? "rgba(136, 19, 55, 0.96)" : "rgba(15, 23, 42, 0.92)";
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bubbleW, bubbleH, 8);
+          ctx.fill();
+          ctx.strokeStyle = unlocked ? "#fda4af" : "#64748b";
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          ctx.font = "bold 10px 'Plus Jakarta Sans', sans-serif";
+          ctx.fillStyle = unlocked ? "#ffe4e6" : "#cbd5e1";
+          ctx.fillText(unlocked ? "⛩️ GATEKEEPER BOSS TRIAL" : "🔒 GATEKEEPER BOSS", bx + bubbleW / 2, by + 13);
+          ctx.fillStyle = "#fde047";
+          ctx.fillText("ANSWER 2 QUESTIONS TO PROCEED!", bx + bubbleW / 2, by + 26);
+        }
+      }
+
+      // 8. Draw Patrolling Shadow Guards
+      for (const g of guards) {
+        if (!g.alive) continue;
+        ctx.save();
+        ctx.fillStyle = "#dc2626";
+        ctx.beginPath();
+        ctx.roundRect(g.x, g.y, g.w, g.h, 6);
+        ctx.fill();
+        ctx.strokeStyle = "#fca5a5";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Guard Turban & Scimitar
+        ctx.fillStyle = "#111827";
+        ctx.fillRect(g.x + 3, g.y + 2, g.w - 6, 10);
+        ctx.font = "15px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("⚔️", g.x + g.w / 2, g.y + 28);
+
+        ctx.font = "bold 9px 'Plus Jakarta Sans', sans-serif";
+        ctx.fillStyle = "#fca5a5";
+        ctx.fillText("GUARD (⚔️STRIKE)", g.x + g.w / 2, g.y - 6);
+        ctx.restore();
+      }
+
+      // 9. Draw The Prince of Persia Hero
+      ctx.save();
+      if (prince.invulnFrames > 0 && Math.floor(prince.invulnFrames / 4) % 2 === 0) {
+        ctx.globalAlpha = 0.45;
+      }
+
+      // Flowing Crimson Sash
+      ctx.fillStyle = "#e11d48";
+      ctx.fillRect(prince.x + (prince.facing === 1 ? -8 : prince.w - 2), prince.y + 18, 10, 6);
+
+      // Royal Tunic Body
+      ctx.fillStyle = "#f8fafc";
+      ctx.beginPath();
+      ctx.roundRect(prince.x, prince.y + 12, prince.w, prince.h - 12, 6);
+      ctx.fill();
+
+      // Gold Vest
+      ctx.fillStyle = "#d97706";
+      ctx.fillRect(prince.x + 4, prince.y + 14, prince.w - 8, 16);
+
+      // Head & Royal Turban
+      ctx.fillStyle = "#fed7aa";
+      ctx.beginPath();
+      ctx.arc(prince.x + prince.w / 2, prince.y + 8, 9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#f59e0b";
+      ctx.fillRect(prince.x + 5, prince.y - 2, prince.w - 10, 7);
+
+      // Sword Slash Arc when striking
+      if (prince.attackFrames > 0) {
+        ctx.strokeStyle = "#fef08a";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        const slashCenterX = prince.x + prince.w / 2 + prince.facing * 24;
+        ctx.arc(slashCenterX, prince.y + 24, 24, -0.7, 0.9);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // 10. Draw 1-Tap Target Beacon on Ground if active
+      if (prince.targetTapX !== null) {
+        ctx.strokeStyle = "rgba(250, 204, 21, 0.75)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(prince.targetTapX, prince.targetTapY, 12, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+
+    function gameLoop() {
+      updatePhysics();
+      renderGame();
+      requestAnimationFrame(gameLoop);
+    }
+
+    // =========================================================================
+    // 8. MODAL FLOWS: SCROLL PARCHMENT, RELIC & GATEKEEPER 2-QUESTION BOSS QUIZ
+    // =========================================================================
+    function enterPalaceGame() {
+      document.getElementById('startSplashModal').classList.add('hidden');
+      gameStarted = true;
+      SoundFX.init();
+      SoundFX.startMusic();
+      VoiceEngine.init();
+      buildLevelWorld(0);
+    }
+
+    function openNodeModal(node) {
+      const lvl = LEVELS[currentLevelIdx];
+      prince.vx = 0;
+      prince.targetTapX = null;
+
+      if (node.type === "scroll") {
+        activeModal = "parchment";
+        inspectingItem = node;
+        const scrollData = lvl.scrolls[node.index];
+        SoundFX.play('scroll');
+
+        document.getElementById('scrollBadgeType').textContent = `LEVEL ${lvl.levelNumber} • SCROLL ${scrollData.number} OF 3`;
+        document.getElementById('scrollVoicePersonaTag').textContent = `🎙️ ${scrollData.voiceLabel}`;
+        document.getElementById('scrollTitle').textContent = scrollData.title;
+
+        // Build complete scrollable statutory content
+        const htmlSections = scrollData.sections.map(sec => {
+          let inner = `<h3 class="font-display font-bold text-amber-950 text-sm sm:text-base mb-1">${sec.heading}</h3>`;
+          if (sec.body) {
+            inner += `<p class="text-amber-950/90 text-xs sm:text-sm leading-relaxed">${sec.body}</p>`;
+          }
+          if (sec.bullets) {
+            inner += `<ul class="space-y-1.5 mt-1.5">` +
+              sec.bullets.map(b => `<li class="bg-amber-950/10 border border-amber-900/20 rounded-lg px-3 py-1.5 text-xs sm:text-sm font-medium text-amber-950">${b}</li>`).join("") +
+              `</ul>`;
+          }
+          return `<div class="bg-amber-50/60 border border-amber-900/25 rounded-xl p-3.5 shadow-sm">${inner}</div>`;
+        }).join("");
+
+        document.getElementById('scrollBodyContent').innerHTML = htmlSections;
+        document.getElementById('scrollBodyContent').scrollTop = 0;
+        document.getElementById('btnCloseParchment').textContent = `✓ SEAL SCROLL ${scrollData.number} & CONTINUE`;
+        document.getElementById('parchmentModal').classList.remove('hidden');
+
+        // Speak with distinct Scroll Character Voice after 650ms breath delay
+        VoiceEngine.speak(scrollData.spokenScript, scrollData.voiceRole, 650);
+
+      } else if (node.type === "relic") {
+        activeModal = "parchment";
+        inspectingItem = node;
+        const relic = lvl.relic;
+        SoundFX.play('scroll');
+
+        document.getElementById('scrollBadgeType').textContent = `LEVEL ${lvl.levelNumber} • JUDICIAL CASE RELIC`;
+        document.getElementById('scrollVoicePersonaTag').textContent = `🎙️ ${relic.voiceLabel}`;
+        document.getElementById('scrollTitle').textContent = relic.title;
+
+        document.getElementById('scrollBodyContent').innerHTML = `
+          <div class="bg-amber-50/70 border border-amber-900/30 rounded-xl p-3.5 space-y-2">
+            <div class="text-xs font-bold uppercase tracking-wider text-amber-900">Citation: ${relic.citation}</div>
+            <p class="text-xs sm:text-sm text-amber-950 leading-relaxed font-medium">${relic.summary}</p>
+            <div class="pt-2">
+              <a href="${relic.url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-900 text-amber-100 text-xs font-bold hover:bg-amber-800 transition">
+                <span>⚖️ Read Verified Court Judgment Source</span> <span>↗</span>
+              </a>
+            </div>
+          </div>
+          <div class="bg-rose-950/10 border border-rose-900/30 rounded-xl p-3 text-xs text-amber-950 font-semibold">
+            ⛩️ <strong>Next Step:</strong> Sealing this Case Relic unlocks the <strong>Palace Gatekeeper Boss</strong>! Walk to the Gatekeeper and answer his <strong>2 Questions</strong> to open the gate to the next level.
+          </div>
+        `;
+        document.getElementById('scrollBodyContent').scrollTop = 0;
+        document.getElementById('btnCloseParchment').textContent = `✓ CLAIM CASE RELIC & UNLOCK GATEKEEPER QUIZ`;
+        document.getElementById('parchmentModal').classList.remove('hidden');
+
+        VoiceEngine.speak(relic.spokenScript, "relic", 650);
+
+      } else if (node.type === "gatekeeper") {
+        openGatekeeperBossQuiz();
+      }
+    }
+
+    function completeParchmentReading() {
+      if (!inspectingItem) return;
+      const key = inspectingItem.key;
+      levelProgress[key] = true;
+      document.getElementById('parchmentModal').classList.add('hidden');
+      activeModal = null;
+      inspectingItem = null;
+      VoiceEngine.stop();
+      updateHUD();
+
+      if (key === "relic") {
+        showCombatToast("⛩️ Gatekeeper Boss Unlocked! Approach the Gate for the 2-Question Quiz!");
+      }
+    }
+
+    function openGatekeeperBossQuiz() {
+      activeModal = "gatekeeper";
+      gkQuizIndex = 0;
+      SoundFX.play('gatekeeper');
+      document.getElementById('gatekeeperModal').classList.remove('hidden');
+      renderGatekeeperQuestion();
+    }
+
+    function renderGatekeeperQuestion() {
+      const lvl = LEVELS[currentLevelIdx];
+      const qObj = lvl.gatekeeperQuiz[gkQuizIndex];
+      gkAnswered = false;
+
+      document.getElementById('gatekeeperModalTitle').textContent =
+        `Level ${lvl.levelNumber} Gatekeeper Trial — Answer 2 Questions to Proceed!`;
+      document.getElementById('gatekeeperQuestionCounter').textContent =
+        `QUESTION ${gkQuizIndex + 1} OF ${lvl.gatekeeperQuiz.length}`;
+      document.getElementById('gatekeeperQuestionText').textContent = qObj.question;
+
+      const feedbackBox = document.getElementById('gatekeeperFeedbackBox');
+      feedbackBox.classList.add('hidden');
+      document.getElementById('btnGatekeeperNext').classList.add('hidden');
+
+      const optionsHtml = qObj.options.map((opt, i) => `
+        <button onclick="selectGatekeeperAnswer(${i})"
+          class="w-full text-left p-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 hover:border-amber-400/60 text-xs sm:text-sm text-slate-100 font-medium transition flex items-start gap-2.5">
+          <span class="px-2 py-0.5 rounded bg-amber-500/20 border border-amber-400/40 text-amber-300 font-bold text-xs shrink-0">${String.fromCharCode(65 + i)}</span>
+          <span>${opt.text}</span>
+        </button>
+      `).join("");
+      document.getElementById('gatekeeperOptionsList').innerHTML = optionsHtml;
+
+      // Speak with deep Gatekeeper Boss voice after 650ms breath delay
+      VoiceEngine.speak(qObj.spokenQuestion, "gatekeeper", 650);
+    }
+
+    function selectGatekeeperAnswer(optIdx) {
+      if (gkAnswered) return;
+      const lvl = LEVELS[currentLevelIdx];
+      const qObj = lvl.gatekeeperQuiz[gkQuizIndex];
+      const chosen = qObj.options[optIdx];
+      const feedbackBox = document.getElementById('gatekeeperFeedbackBox');
+      const nextBtn = document.getElementById('btnGatekeeperNext');
+
+      feedbackBox.classList.remove('hidden');
+
+      if (chosen.correct) {
+        gkAnswered = true;
+        SoundFX.play('scroll');
+        feedbackBox.className = "rounded-xl p-3.5 text-xs sm:text-sm border bg-emerald-950/90 border-emerald-400 text-emerald-200 font-semibold";
+        feedbackBox.textContent = chosen.feedback;
+
+        nextBtn.classList.remove('hidden');
+        if (gkQuizIndex < lvl.gatekeeperQuiz.length - 1) {
+          nextBtn.textContent = "NEXT GATEKEEPER QUESTION (2 OF 2) ▶";
+        } else {
+          nextBtn.textContent = currentLevelIdx < LEVELS.length - 1
+            ? "🚪 UNSEAL PALACE GATE & ENTER NEXT LEVEL ▶"
+            : "🏆 CLAIM ROYAL POSH GUARDIAN CROWN ▶";
+        }
+        VoiceEngine.speak(chosen.feedback, "gatekeeper", 400);
+      } else {
+        SoundFX.play('hurt');
+        feedbackBox.className = "rounded-xl p-3.5 text-xs sm:text-sm border bg-rose-950/90 border-rose-400 text-rose-200 font-semibold";
+        feedbackBox.textContent = chosen.feedback + " Try selecting the correct legal response!";
+        VoiceEngine.speak(chosen.feedback, "gatekeeper", 400);
+      }
+    }
+
+    function advanceGatekeeperQuiz() {
+      const lvl = LEVELS[currentLevelIdx];
+      if (gkQuizIndex < lvl.gatekeeperQuiz.length - 1) {
+        gkQuizIndex++;
+        renderGatekeeperQuestion();
+      } else {
+        levelProgress.gatePassed = true;
+        document.getElementById('gatekeeperModal').classList.add('hidden');
+        activeModal = null;
+        VoiceEngine.stop();
+        updateHUD();
+
+        if (currentLevelIdx < LEVELS.length - 1) {
+          buildLevelWorld(currentLevelIdx + 1);
+        } else {
+          document.getElementById('victoryModal').classList.remove('hidden');
+          VoiceEngine.speak(
+            "Congratulations, Guardian of the Sands of Dignity! You have conquered all five Palace Levels and mastered the Prevention of Sexual Harassment Act 2013.",
+            "narrator",
+            650
+          );
+        }
+      }
+    }
+
+    function closeGatekeeperModal() {
+      document.getElementById('gatekeeperModal').classList.add('hidden');
+      activeModal = null;
+      VoiceEngine.stop();
+    }
+
+    function openLevelSelectModal() {
+      const list = document.getElementById('levelSelectList');
+      list.innerHTML = LEVELS.map((l, idx) => `
+        <button onclick="restartFromLevel(${idx})"
+          class="w-full text-left p-3 rounded-xl border ${idx === currentLevelIdx ? 'bg-amber-500/20 border-amber-400' : 'bg-slate-900/90 border-slate-700 hover:border-amber-500/40'} flex items-center justify-between gap-2 transition">
+          <div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-amber-300">Level ${l.levelNumber} of 5</div>
+            <div class="font-display font-bold text-sm text-white">${l.name}</div>
+            <div class="text-[11px] text-slate-400">${l.subtitle}</div>
+          </div>
+          <span class="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-bold text-xs shrink-0">Play ▶</span>
+        </button>
+      `).join("");
+      document.getElementById('levelSelectModal').classList.remove('hidden');
+    }
+
+    function closeLevelSelectModal() {
+      document.getElementById('levelSelectModal').classList.add('hidden');
+    }
+
+    function closeVictoryModal() {
+      document.getElementById('victoryModal').classList.add('hidden');
+    }
+
+    function restartFromLevel(idx) {
+      closeLevelSelectModal();
+      closeVictoryModal();
+      activeModal = null;
+      buildLevelWorld(idx);
+    }
+
+    // Initialize world & start render loop
+    buildLevelWorld(0);
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>

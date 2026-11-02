@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grade 7 News Analysis Assignment</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#eef2f4;color:#202a33}
+.app{max-width:980px;margin:0 auto;background:#fff;min-height:100vh}
+header{padding:28px 34px 22px;background:#17212b;color:#fff}
+.brand{font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.78}
+h1{margin:7px 0 0;font-size:30px}
+main{padding:28px 34px 42px}
+.progress{height:7px;background:#dfe5e8;border-radius:10px;margin-bottom:28px;overflow:hidden}
+.bar{height:100%;width:0;background:#267f78;transition:.25s}
+.screen{display:none}
+.screen.active{display:block}
+.eyebrow{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#63717c;margin-bottom:8px}
+h2{font-size:27px;margin:0 0 12px}
+h3{margin:0 0 9px;font-size:19px}
+p{font-size:17px;line-height:1.58;margin:9px 0}
+.card,.article{border:1px solid #dce2e5;border-radius:14px;padding:20px;margin:16px 0;background:#fafbfc}
+.article{background:#fff;border-left:5px solid #7b8790}
+.article h3{font-size:22px}
+.dateline{font-weight:700;color:#58656e;margin-bottom:12px}
+.keep{background:#eaf3f3;border-left:5px solid #267f78;padding:13px 16px;border-radius:9px;margin:15px 0;font-size:16px}
+.choices{display:grid;gap:11px;margin-top:15px}
+button{font:inherit}
+.choice,.action{border:1px solid #cbd3d8;background:#fff;border-radius:11px;padding:14px 16px;cursor:pointer;text-align:left}
+.choice:hover{background:#f6f8f9}
+.choice.correct{border-color:#287a55;background:#e7f4ed}
+.choice.indicative{border-color:#7e5962;background:#f2e9eb}
+.feedback{display:none;margin-top:14px;padding:13px 15px;border-radius:9px;line-height:1.5}
+.feedback.show{display:block}
+.feedback.good{background:#e7f4ed;border:1px solid #b8dcc8}
+.feedback.ind{background:#f2e9eb;border:1px solid #d8c0c7}
+.ack{display:none;margin-top:9px;font-size:14px;color:#267f78;font-weight:700}
+.nav{display:flex;justify-content:space-between;gap:12px;margin-top:25px}
+.action{background:#17212b;color:#fff;border-color:#17212b;text-align:center}
+.action.secondary{background:#fff;color:#202a33;border-color:#cbd3d8}
+.action:disabled{opacity:.45;cursor:not-allowed}
+.score{font-size:42px;font-weight:700;margin:8px 0}
+.small{font-size:14px;color:#68737d}
+ul{line-height:1.7;font-size:16px}
+@media(max-width:650px){main{padding:22px 18px}header{padding:24px 20px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+<div class="brand">Grade 7 · English · 3.5</div>
+<h1>News Analysis — Assignment</h1>
+</header>
+<main>
+<div class="progress"><div class="bar" id="bar"></div></div>
+
+<section class="screen active" id="s1">
+<div class="eyebrow">Assignment</div>
+<h2>Read the two news reports</h2>
+<p>You have already read and discussed <i>News Analysis</i>. Now use the same reading process with two new news reports.</p>
+<div class="card">
+<h3>As you read, keep asking:</h3>
+<ul>
+<li>What information is being reported?</li>
+<li>Who is giving the information?</li>
+<li>What is the problem?</li>
+<li>What solution or response is given?</li>
+<li>What is stated, and what can I infer?</li>
+</ul>
+</div>
+<button class="action" onclick="go(2)">Begin</button>
+</section>
+
+<section class="screen" id="s2">
+<div class="eyebrow">Reading 1</div>
+<h2>School starts a rainwater project</h2>
+<div class="article">
+<h3>School starts a rainwater project</h3>
+<div class="dateline">Pune, 18 July</div>
+<p>Students of Shantiniketan School in Pune have started a rainwater project in their school. During the monsoon, rainwater from the roof used to flow into the street.</p>
+<p>The school has now placed pipes to carry the rainwater into a storage tank. The stored water will be used for watering plants and cleaning the school ground.</p>
+<p>“We wanted to make better use of the rainwater we receive,” said the school principal. Students from the Eco Club helped teachers check the pipes and keep the tank clean.</p>
+</div>
+<div class="keep"><b>Keep in mind:</b> First understand what the report tells us.</div>
+<button class="action" onclick="go(3)">Continue</button>
+</section>
+
+<section class="screen" id="s3">
+<div class="eyebrow">Reading 2</div>
+<h2>Students collect plastic for recycling</h2>
+<div class="article">
+<h3>Students collect plastic for recycling</h3>
+<div class="dateline">Nashik, 6 August</div>
+<p>Students of Vidya Mandir School in Nashik have started collecting used plastic bottles from their homes and neighbourhood.</p>
+<p>The school says that the bottles will be sent to a recycling centre. The students have also put collection boxes near the school gate.</p>
+<p>“This will make our neighbourhood completely free of plastic waste,” said one student.</p>
+<p>A local waste worker, however, said that collecting bottles was useful but would not solve the whole problem. He said that people also needed to reduce the use of plastic and put waste in the correct place.</p>
+</div>
+<div class="keep"><b>Keep in mind:</b> Notice who says each piece of information.</div>
+<button class="action" onclick="go(4)">Continue</button>
+</section>
+
+<section class="screen" id="s4">
+<div class="eyebrow">Check 1</div>
+<h2>Identify the problem</h2>
+<div class="card">
+<p><b>What problem is most clearly reported in the first news report?</b></p>
+<div class="choices">
+<button class="choice" onclick="choose(this,false,'Look at what happened to the rainwater before the project began. The problem is connected with how the rainwater was being used.')">The school had too many plants.</button>
+<button class="choice" onclick="choose(this,true,'Correct. The report tells us that rainwater from the roof used to flow into the street instead of being collected and used.')">Rainwater from the school roof was not being collected and used.</button>
+<button class="choice" onclick="choose(this,false,'The report mentions the school ground, but that is not the problem the project is addressing.')">The school ground could not be cleaned.</button>
+</div>
+<div class="feedback" id="f4"></div><div class="ack" id="a4">Response registered.</div>
+</div>
+<div class="nav"><button class="action secondary" onclick="go(3)">Back</button><button class="action" id="n4" disabled onclick="go(5)">Continue</button></div>
+</section>
+
+<section class="screen" id="s5">
+<div class="eyebrow">Check 2</div>
+<h2>Who is saying what?</h2>
+<div class="card">
+<p><b>Which statement is directly reported by the school principal in the first article?</b></p>
+<div class="choices">
+<button class="choice" onclick="choose(this,false,'That is what the students did, but it is not the principal’s statement.')">Students helped check the pipes and clean the tank.</button>
+<button class="choice" onclick="choose(this,true,'Correct. The article directly attributes this statement to the school principal.')">The school wanted to make better use of the rainwater.</button>
+<button class="choice" onclick="choose(this,false,'The report does not say that the principal said this.')">The rainwater project will save a large amount of money.</button>
+</div>
+<div class="feedback" id="f5"></div><div class="ack" id="a5">Response registered.</div>
+</div>
+<div class="nav"><button class="action secondary" onclick="go(4)">Back</button><button class="action" id="n5" disabled onclick="go(6)">Continue</button></div>
+</section>
+
+<section class="screen" id="s6">
+<div class="eyebrow">Check 3</div>
+<h2>Identify the solution</h2>
+<div class="card">
+<p><b>What solution has the school introduced in the first article?</b></p>
+<div class="choices">
+<button class="choice" onclick="choose(this,false,'The Eco Club helped with the project, but this is not the main solution.')">The Eco Club will plant more trees.</button>
+<button class="choice" onclick="choose(this,true,'Correct. Pipes now carry rainwater from the roof into a storage tank for later use.')">Rainwater is carried into a storage tank and used in the school.</button>
+<button class="choice" onclick="choose(this,false,'The report does not say that the school stopped using water.')">The school has stopped using water during the monsoon.</button>
+</div>
+<div class="feedback" id="f6"></div><div class="ack" id="a6">Response registered.</div>
+</div>
+<div class="nav"><button class="action secondary" onclick="go(5)">Back</button><button class="action" id="n6" disabled onclick="go(7)">Continue</button></div>
+</section>
+
+<section class="screen" id="s7">
+<div class="eyebrow">Check 4</div>
+<h2>Report or claim?</h2>
+<div class="card">
+<p><b>In the second article, which statement is a claim made by a student?</b></p>
+<div class="choices">
+<button class="choice" onclick="choose(this,false,'The article reports that bottles are being collected. That is not the student’s claim.')">The students are collecting used plastic bottles.</button>
+<button class="choice" onclick="choose(this,true,'Correct. The student says the collection will make the neighbourhood completely free of plastic waste.')">The collection will make the neighbourhood completely free of plastic waste.</button>
+<button class="choice" onclick="choose(this,false,'This statement is attributed to the waste worker, not the student.')">People also need to reduce the use of plastic.</button>
+</div>
+<div class="feedback" id="f7"></div><div class="ack" id="a7">Response registered.</div>
+</div>
+<div class="nav"><button class="action secondary" onclick="go(6)">Back</button><button class="action" id="n7" disabled onclick="go(8)">Continue</button></div>
+</section>
+
+<section class="screen" id="s8">
+<div class="eyebrow">Check 5</div>
+<h2>What can we infer?</h2>
+<div class="card">
+<p><b>What can we reasonably infer from the second article?</b></p>
+<div class="choices">
+<button class="choice" onclick="choose(this,false,'The article does not establish that collecting bottles alone will remove all plastic waste.')">Collecting bottles alone will remove all plastic waste.</button>
+<button class="choice" onclick="choose(this,true,'Correct. The waste worker’s statement supports the inference that collecting bottles is useful, but more action is needed.')">Collecting bottles is useful, but it is not enough by itself to solve the whole plastic-waste problem.</button>
+<button class="choice" onclick="choose(this,false,'The article does not say that recycling centres cannot accept the bottles.')">The recycling centre cannot use the collected bottles.</button>
+</div>
+<div class="feedback" id="f8"></div><div class="ack" id="a8">Response registered.</div>
+</div>
+<div class="nav"><button class="action secondary" onclick="go(7)">Back</button><button class="action" id="n8" disabled onclick="go(9)">Continue</button></div>
+</section>
+
+<section class="screen" id="s9">
+<div class="eyebrow">Check 6</div>
+<h2>Use the evidence</h2>
+<div class="card">
+<p><b>Which conclusion is best supported by both reports?</b></p>
+<div class="choices">
+<button class="choice" onclick="choose(this,false,'The reports describe different actions, but neither says that one action solves every environmental problem.')">One school activity can solve every environmental problem.</button>
+<button class="choice" onclick="choose(this,true,'Correct. Both reports show a problem, a response to that problem, and the need to look carefully at what the report actually establishes.')">A response to a problem can be useful, but we should examine what the report actually tells us before drawing a larger conclusion.</button>
+<button class="choice" onclick="choose(this,false,'The second report actually shows that more action may be needed.')">If students take action, no other action is needed.</button>
+</div>
+<div class="feedback" id="f9"></div><div class="ack" id="a9">Response registered.</div>
+</div>
+<div class="nav"><button class="action secondary" onclick="go(8)">Back</button><button class="action" id="n9" disabled onclick="go(10)">Continue</button></div>
+</section>
+
+<section class="screen" id="s10">
+<div class="eyebrow">Check 7</div>
+<h2>Problem → Process → Solution</h2>
+<div class="card">
+<p><b>Which process should a reader use when reading a new news article?</b></p>
+<div class="choices">
+<button class="choice" onclick="choose(this,false,'Counting how many people agree does not tell us whether the information is supported by the text.')">Accept a statement when many people believe it.</button>
+<button class="choice" onclick="choose(this,true,'Exactly. The reader identifies the information and its source, checks what is actually stated, and uses evidence before drawing a conclusion.')">Identify the information and its source, check what is stated, and use evidence before drawing a conclusion.</button>
+<button class="choice" onclick="choose(this,false,'A headline gives a starting point, but it is not enough to analyse the whole report.')">Decide what the article means from its headline alone.</button>
+</div>
+<div class="feedback" id="f10"></div><div class="ack" id="a10">Response registered.</div>
+</div>
+<div class="nav"><button class="action secondary" onclick="go(9)">Back</button><button class="action" id="n10" disabled onclick="go(11)">Continue</button></div>
+</section>
+
+<section class="screen" id="s11">
+<div class="eyebrow">Check 8</div>
+<h2>Final reading decision</h2>
+<div class="card">
+<p><b>Which reader is analysing the two news reports effectively?</b></p>
+<div class="choices">
+<button class="choice" onclick="choose(this,false,'A critical reader does not accept a statement simply because it appears in a news report.')">A reader who accepts every statement because it appears in the newspaper.</button>
+<button class="choice" onclick="choose(this,true,'Exactly. This reader checks the source, separates what is reported from what is claimed or inferred, and uses evidence.')">A reader who checks the source, what is reported, what is claimed, and what the evidence supports.</button>
+<button class="choice" onclick="choose(this,false,'A reader needs to examine the information before reaching a conclusion.')">A reader who decides whether a report is true from the first sentence.</button>
+</div>
+<div class="feedback" id="f11"></div><div class="ack" id="a11">Response registered.</div>
+</div>
+<div class="nav"><button class="action secondary" onclick="go(10)">Back</button><button class="action" id="n11" disabled onclick="go(12)">Finish</button></div>
+</section>
+
+<section class="screen" id="s12">
+<div class="eyebrow">Complete</div>
+<h2>Assignment complete</h2>
+<div class="card">
+<div class="score" id="score">—</div>
+<p>You have applied the News Analysis reading process to two new informational texts.</p>
+<p><b>Remember:</b> Read the whole text. Identify the source. Examine what is actually reported. Distinguish a claim from an inference. Use evidence before reaching a conclusion.</p>
+</div>
+<button class="action" onclick="location.reload()">Restart</button>
+</section>
+
+</main>
+</div>
+<script>
+let current=1,correct=0,answered={};
+const total=12;
+function go(n){
+ document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+ document.getElementById('s'+n).classList.add('active');
+ current=n;
+ document.getElementById('bar').style.width=((n-1)/(total-1)*100)+'%';
+ window.scrollTo({top:0,behavior:'smooth'});
+ if(n===12) document.getElementById('score').textContent=correct+' / 8 checks correct';
+}
+function choose(btn,isCorrect,msg){
+ const box=btn.parentElement;
+ [...box.querySelectorAll('.choice')].forEach(b=>b.disabled=true);
+ btn.classList.add(isCorrect?'correct':'indicative');
+ const f=box.parentElement.querySelector('.feedback');
+ f.textContent=msg; f.className='feedback show '+(isCorrect?'good':'ind');
+ const ack=box.parentElement.querySelector('.ack');
+ if(ack) ack.style.display='block';
+ if(isCorrect) correct++;
+ answered[current]=true;
+ const next=document.getElementById('n'+current);
+ if(next) next.disabled=false;
+}
+</script>
+</body>
+</html>
