@@ -813,3 +813,114 @@ h2 {
     animation-iteration-count: 1 !important;
   }
 }
+/* ==========================================================================
+   HEURISTIC RESTRUCTURE: UNIFIED COMPONENT SYSTEM
+   ========================================================================== */
+
+/* Quick-jump category strip / filters */
+.category-filter-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 32px 0 48px;
+  padding: 0;
+  list-style: none;
+}
+
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: var(--radius-small);
+  transition: all 0.18s ease;
+}
+
+.category-chip:hover,
+.category-chip:focus-visible {
+  border-color: var(--ink);
+  background: var(--soft);
+}
+
+.category-chip .count {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+/* Uniform Card Matrix */
+.artifact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.artifact-card {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-small);
+  transition: transform 0.18s ease, border-color 0.18s ease;
+  position: relative;
+}
+
+.artifact-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.artifact-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+  gap: 12px;
+}
+
+.artifact-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-dark);
+  background: var(--soft);
+  padding: 3px 8px;
+  border-radius: var(--radius-small);
+}
+
+.artifact-card h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 10px;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+}
+
+.artifact-card p {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  margin: 0 0 20px;
+  flex-grow: 1;
+}
+
+.artifact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  margin-top: auto;
+}
+
+.artifact-actions .text-link {
+  font-size: 0.86rem;
+}
