@@ -13,4 +13,20 @@ document.addEventListener("DOMContentLoaded", () => {
       link.setAttribute("aria-current", "page");
     }
   });
+
+  /* Automatically swap coming-soon links to real assets if the files exist */
+  document.querySelectorAll("a[data-asset-target]").forEach((link) => {
+    const targetUrl = link.getAttribute("data-asset-target");
+    if (!targetUrl) return;
+
+    fetch(targetUrl, { method: "HEAD" })
+      .then((response) => {
+        if (response.ok) {
+          link.href = targetUrl;
+        }
+      })
+      .catch(() => {
+        /* File not reachable yet; keeps pointing to coming-soon.html */
+      });
+  });
 });
